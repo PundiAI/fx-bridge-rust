@@ -1,0 +1,30 @@
+[package]
+name = "fxeth"
+version = "0.1.0"
+authors = ["zakir <zakir@pundix.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bridge = { version = "0.1.0", path = "../bridge" }
+relayer = { version = "0.1.0", path = "../relayer" }
+fxchain = { version = "0.1.0", path = "../fxchain" }
+ethereum = { version = "0.1.0", path = "../ethereum" }
+prometheus = { version = "0.1.0", path = "../prometheus" }
+web3 = { git = "https://github.com/tomusdrw/rust-web3", branch = "master" }
+openssl = { version = "0.10", features = ["vendored"] }
+tokio = "1.5"
+log = "0.4.14"
+env_logger = "0.8.3"
+tonic = "0.4.1"
+prost-types = "0.7"
+eyre = "0.6"
+serde = "1.0"
+serde_derive = "1.0"
+secp256k1 = "0.20.1"
+futures = "0.3"
+serde_json = "1.0"
+hex = "0.4.3"
+sha2 = "0.9"
+clap = "3.0.0-beta.2"

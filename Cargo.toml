@@ -1,0 +1,15 @@
+[workspace]
+
+members = [
+    "bridge",
+    "ethereum",
+    "fxchain",
+    "fxeth",
+    "prometheus",
+    "proto-build",
+    "relayer",
+]
+
+default-members = ["fxeth"]
+
+[patch.crates-io]

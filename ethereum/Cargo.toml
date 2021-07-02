@@ -1,0 +1,25 @@
+[package]
+name = "ethereum"
+version = "0.1.0"
+authors = ["zakir <zakir@pundix.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+prometheus = { version = "0.1.0", path = "../prometheus" }
+web3 = { git = "https://github.com/tomusdrw/rust-web3", branch = "master" }
+reqwest = { version = "0.11", features = ["json"] }
+secp256k1 = "0.20.1"
+log = "0.4"
+env_logger = "0.8.3"
+tokio = "1.5.0"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+eyre = "0.6"
+num256 = "0.3"
+sha3 = "0.9"
+hex="0.4.3"
+rust-crypto = "0.2"
+futures = "0.3.5"
