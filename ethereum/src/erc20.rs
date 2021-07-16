@@ -3,8 +3,8 @@ use std::fmt::Debug;
 use eyre::Result;
 use sha3::{Digest, Keccak256};
 use web3::api::Eth;
-use web3::contract::{Contract, Options};
 use web3::contract::tokens::{Detokenize, Tokenizable};
+use web3::contract::{Contract, Options};
 use web3::ethabi::{Contract as ContractABI, Hash, Token};
 use web3::transports::Http;
 use web3::types::{Address, BlockId, BlockNumber, TransactionReceipt, U256};
@@ -24,19 +24,10 @@ pub struct ERC20 {
 }
 
 impl ERC20 {
-    pub fn new(
-        private_key: Option<PrivateKey>,
-        options: Option<Options>,
-        eth: Eth<Http>,
-        address: Address,
-    ) -> Self {
+    pub fn new(private_key: Option<PrivateKey>, options: Option<Options>, eth: Eth<Http>, address: Address) -> Self {
         let abi: ContractABI = serde_json::from_str(ERC20_ABI).expect("invalid ERC20 abi");
         let contract = Contract::new(eth.clone(), address, abi);
-        let options = if options.is_some() {
-            options.unwrap()
-        } else {
-            Options::default()
-        };
+        let options = if options.is_some() { options.unwrap() } else { Options::default() };
         let (private_key, from) = if private_key.is_some() {
             (private_key.clone(), private_key.unwrap().address())
         } else {
@@ -52,102 +43,47 @@ impl ERC20 {
     }
     ///"Calls the contract's `balanceOf` (0x70a08231) function"
     pub async fn balance_of(&self, account: Address) -> Result<U256> {
-        let result = self
-            .contract
-            .query(
-                "balanceOf",
-                account,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("balanceOf", account, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `decimals` (0x313ce567) function"
     pub async fn decimals(&self) -> Result<u8> {
-        let result = self
-            .contract
-            .query(
-                "decimals",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("decimals", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `name` (0x06fdde03) function"
     pub async fn name(&self) -> Result<String> {
-        let result = self
-            .contract
-            .query(
-                "name",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("name", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `symbol` (0x95d89b41) function"
     pub async fn symbol(&self) -> Result<String> {
-        let result = self
-            .contract
-            .query(
-                "symbol",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("symbol", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `totalSupply` (0x18160ddd) function"
     pub async fn total_supply(&self) -> Result<U256> {
-        let result = self
-            .contract
-            .query(
-                "totalSupply",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("totalSupply", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `allowance` (0xdd62ed3e) function"
     pub async fn allowance(&self, owner: Address, spender: Address) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "allowance",
-                (owner, spender),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("allowance", (owner, spender), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
     ///"Calls the contract's `approve` (0x095ea7b3) function"
     pub async fn approve(&self, spender: Address, amount: U256) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
-            return Err(eyre::Error::msg(
-                "no private key to authorize the transaction with",
-            ));
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
         }
         let mut options = self.options.clone();
         options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
             nonce
         } else {
-            self.eth
-                .transaction_count(self.from, Some(BlockNumber::Latest))
-                .await?
+            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
         });
         options.gas_price = if let Some(gas_price) = self.options.gas_price {
             Some(gas_price)
@@ -158,27 +94,13 @@ impl ERC20 {
         options.gas = if let Some(gas) = self.options.gas {
             Some(gas)
         } else {
-            let gas = self
-                .contract
-                .estimate_gas(
-                    "approve",
-                    (spender, amount),
-                    self.from.clone(),
-                    options.clone(),
-                )
-                .await?;
+            let gas = self.contract.estimate_gas("approve", (spender, amount), self.from.clone(), options.clone()).await?;
             Some(gas)
         };
 
         let transaction_receipt = self
             .contract
-            .signed_call_with_confirmations(
-                "approve",
-                (spender, amount),
-                options.clone(),
-                TX_CONFIRMATIONS_BLOCK_NUMBER,
-                self.private_key.clone().unwrap(),
-            )
+            .signed_call_with_confirmations("approve", (spender, amount), options.clone(), TX_CONFIRMATIONS_BLOCK_NUMBER, self.private_key.clone().unwrap())
             .await?;
         Ok(transaction_receipt)
     }
@@ -194,17 +116,13 @@ impl ERC20 {
     ///"Calls the contract's `transfer` (0xa9059cbb) function"
     pub async fn transfer(&self, recipient: Address, amount: U256) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
-            return Err(eyre::Error::msg(
-                "no private key to authorize the transaction with",
-            ));
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
         }
         let mut options = self.options.clone();
         options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
             nonce
         } else {
-            self.eth
-                .transaction_count(self.from, Some(BlockNumber::Latest))
-                .await?
+            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
         });
         options.gas_price = if let Some(gas_price) = self.options.gas_price {
             Some(gas_price)
@@ -215,27 +133,13 @@ impl ERC20 {
         options.gas = if let Some(gas) = self.options.gas {
             Some(gas)
         } else {
-            let gas = self
-                .contract
-                .estimate_gas(
-                    "transfer",
-                    (recipient, amount),
-                    self.from.clone(),
-                    options.clone(),
-                )
-                .await?;
+            let gas = self.contract.estimate_gas("transfer", (recipient, amount), self.from.clone(), options.clone()).await?;
             Some(gas)
         };
 
         let transaction_receipt = self
             .contract
-            .signed_call_with_confirmations(
-                "transfer",
-                (recipient, amount),
-                options.clone(),
-                TX_CONFIRMATIONS_BLOCK_NUMBER,
-                self.private_key.clone().unwrap(),
-            )
+            .signed_call_with_confirmations("transfer", (recipient, amount), options.clone(), TX_CONFIRMATIONS_BLOCK_NUMBER, self.private_key.clone().unwrap())
             .await?;
         Ok(transaction_receipt)
     }
@@ -272,23 +176,14 @@ impl ApprovalEvent {
 impl Detokenize for ApprovalEvent {
     fn from_tokens(tokens: Vec<Token>) -> web3::contract::Result<Self> {
         if tokens.len() != 3 {
-            return Err(web3::contract::Error::InvalidOutputType(format!(
-                "Expected {} tokens, got {}: {:?}",
-                3,
-                tokens.len(),
-                tokens
-            )));
+            return Err(web3::contract::Error::InvalidOutputType(format!("Expected {} tokens, got {}: {:?}", 3, tokens.len(), tokens)));
         }
         #[allow(unused_mut)]
-            let mut tokens = tokens.into_iter();
+        let mut tokens = tokens.into_iter();
         let owner = Tokenizable::from_token(tokens.next().unwrap())?;
         let spender = Tokenizable::from_token(tokens.next().unwrap())?;
         let value = Tokenizable::from_token(tokens.next().unwrap())?;
-        Ok(ApprovalEvent {
-            owner,
-            spender,
-            value,
-        })
+        Ok(ApprovalEvent { owner, spender, value })
     }
 }
 
@@ -311,15 +206,10 @@ impl TransferEvent {
 impl Detokenize for TransferEvent {
     fn from_tokens(tokens: Vec<Token>) -> web3::contract::Result<Self> {
         if tokens.len() != 3 {
-            return Err(web3::contract::Error::InvalidOutputType(format!(
-                "Expected {} tokens, got {}: {:?}",
-                3,
-                tokens.len(),
-                tokens
-            )));
+            return Err(web3::contract::Error::InvalidOutputType(format!("Expected {} tokens, got {}: {:?}", 3, tokens.len(), tokens)));
         }
         #[allow(unused_mut)]
-            let mut tokens = tokens.into_iter();
+        let mut tokens = tokens.into_iter();
         let from = Tokenizable::from_token(tokens.next().unwrap())?;
         let to = Tokenizable::from_token(tokens.next().unwrap())?;
         let value = Tokenizable::from_token(tokens.next().unwrap())?;
@@ -368,10 +258,7 @@ mod test {
 
         let erc20 = ERC20::new(None, None, web3.eth(), erc20_addr);
 
-        let balance = erc20
-            .balance_of(Address::from_str("0xBf660843528035a5A4921534E156a27e64B231fE").unwrap())
-            .await
-            .unwrap();
+        let balance = erc20.balance_of(Address::from_str("0xBf660843528035a5A4921534E156a27e64B231fE").unwrap()).await.unwrap();
         println!("{}", balance);
     }
 }

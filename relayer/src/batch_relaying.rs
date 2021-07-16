@@ -2,8 +2,8 @@ use std::ops::Mul;
 use std::str::FromStr;
 
 use tonic::transport::Channel;
-use web3::ethabi::{FixedBytes, Token};
 use web3::ethabi::Address as EthAddress;
+use web3::ethabi::{FixedBytes, Token};
 use web3::transports::Http;
 use web3::types::U256;
 use web3::Web3;
@@ -13,20 +13,13 @@ use ethereum::address::Checksum;
 use ethereum::client::check_for_ether;
 use ethereum::fx_bridge::FxBridge;
 use ethereum::private_key::{Key, PrivateKey as EthPrivateKey};
-use fxchain::x::gravity::{QueryBatchConfirmsRequest, QueryOutgoingTxBatchesRequest};
-use fxchain::x::gravity::OutgoingTxBatch;
 use fxchain::x::gravity::query_client::QueryClient as GravityQueryClient;
+use fxchain::x::gravity::OutgoingTxBatch;
+use fxchain::x::gravity::{QueryBatchConfirmsRequest, QueryOutgoingTxBatchesRequest};
 
 use crate::valset::{BatchConfirmResponse, Valset};
 
-pub async fn relay_batches(
-    current_valset: Valset,
-    eth_private_key: &EthPrivateKey,
-    grpc_channel: &Channel,
-    web3: &Web3<Http>,
-    bridge_addr: EthAddress,
-    gravity_id: &String,
-) {
+pub async fn relay_batches(current_valset: Valset, eth_private_key: &EthPrivateKey, grpc_channel: &Channel, web3: &Web3<Http>, bridge_addr: EthAddress, gravity_id: &String) {
     let expect = U256::from(5).mul(U256::from(10).pow(U256::from(17)));
     let is_enough = check_for_ether(&web3, eth_private_key.address(), expect).await;
     if !is_enough {
@@ -35,9 +28,7 @@ pub async fn relay_batches(
 
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
 
-    let result = gravity_query_client
-        .outgoing_tx_batches(QueryOutgoingTxBatchesRequest {})
-        .await;
+    let result = gravity_query_client.outgoing_tx_batches(QueryOutgoingTxBatchesRequest {}).await;
     if result.is_err() {
         error!("Query outgoing tx batches failed {:?}", result.err());
         return;
@@ -76,10 +67,7 @@ pub async fn relay_batches(
             batch_signatures.push(response);
         }
         let hash = encode_tx_batch_confirm_hash(gravity_id.clone(), latest_tx_batch.clone());
-        if current_valset
-            .order_signatures(hash.as_ref(), &batch_signatures)
-            .is_ok()
-        {
+        if current_valset.order_signatures(hash.as_ref(), &batch_signatures).is_ok() {
             oldest_tx_batch = Some(latest_tx_batch.clone());
             oldest_signatures = Some(batch_signatures);
         } else {
@@ -97,13 +85,10 @@ pub async fn relay_batches(
     let oldest_signed_batch = oldest_tx_batch.unwrap();
     let oldest_signatures = oldest_signatures.unwrap();
 
-    let bridge_contract =
-        FxBridge::new(Some(eth_private_key.clone()), None, web3.eth(), bridge_addr);
+    let bridge_contract = FxBridge::new(Some(eth_private_key.clone()), None, web3.eth(), bridge_addr);
 
     let erc20_contract = oldest_signed_batch.clone().token_contract;
-    let result = bridge_contract
-        .last_batch_nonce(EthAddress::from_str(erc20_contract.as_str()).unwrap())
-        .await;
+    let result = bridge_contract.last_batch_nonce(EthAddress::from_str(erc20_contract.as_str()).unwrap()).await;
 
     if result.is_err() {
         error!("Failed to get latest Ethereum batch with {:?}", result.err());
@@ -114,10 +99,7 @@ pub async fn relay_batches(
     let latest_fx_batch_nonce = U256::from(oldest_signed_batch.clone().batch_nonce);
 
     if latest_fx_batch_nonce > latest_ethereum_batch {
-        info!(
-            "We have detected latest batch {} but latest on Ethereum is {} to submit",
-            latest_fx_batch_nonce, latest_ethereum_batch,
-        );
+        info!("We have detected latest batch {} but latest on Ethereum is {} to submit", latest_fx_batch_nonce, latest_ethereum_batch,);
 
         let mut current_validators = Vec::new();
         let mut current_powers = Vec::new();
@@ -133,15 +115,9 @@ pub async fn relay_batches(
             let mut found = false;
             for item in oldest_signatures.iter() {
                 if item.ethereum_signer.to_hex_string() == member.eth_address.to_hex_string() {
-                    v.push(Token::Uint(U256::from(
-                        item.eth_signature.v.to_le_bytes()[0],
-                    )));
-                    r.push(Token::FixedBytes(FixedBytes::from(
-                        item.eth_signature.r.as_bytes(),
-                    )));
-                    s.push(Token::FixedBytes(FixedBytes::from(
-                        item.eth_signature.s.as_bytes(),
-                    )));
+                    v.push(Token::Uint(U256::from(item.eth_signature.v.to_le_bytes()[0])));
+                    r.push(Token::FixedBytes(FixedBytes::from(item.eth_signature.r.as_bytes())));
+                    s.push(Token::FixedBytes(FixedBytes::from(item.eth_signature.s.as_bytes())));
                     found = true;
                     break;
                 }
@@ -157,21 +133,12 @@ pub async fn relay_batches(
         let mut destinations = Vec::new();
         let mut fees = Vec::new();
         for item in oldest_signed_batch.transactions.iter() {
-            amounts.push(Token::Uint(
-                U256::from_dec_str(item.erc20_token.as_ref().unwrap().amount.as_str()).unwrap(),
-            ));
-            fees.push(Token::Uint(
-                U256::from_dec_str(item.erc20_fee.as_ref().unwrap().amount.as_str()).unwrap(),
-            ));
-            destinations.push(Token::Address(
-                EthAddress::from_str(item.dest_address.as_str()).unwrap(),
-            ))
+            amounts.push(Token::Uint(U256::from_dec_str(item.erc20_token.as_ref().unwrap().amount.as_str()).unwrap()));
+            fees.push(Token::Uint(U256::from_dec_str(item.erc20_fee.as_ref().unwrap().amount.as_str()).unwrap()));
+            destinations.push(Token::Address(EthAddress::from_str(item.dest_address.as_str()).unwrap()))
         }
 
-        info!(
-            "Submit Batch token contract {}",
-            oldest_signed_batch.token_contract
-        );
+        info!("Submit Batch token contract {}", oldest_signed_batch.token_contract);
         let result = bridge_contract
             .submit_batch(
                 current_validators,

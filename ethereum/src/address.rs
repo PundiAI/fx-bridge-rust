@@ -20,17 +20,15 @@ pub fn checksum(address: &str) -> String {
         hasher.result_str()
     };
 
-    address
-        .char_indices()
-        .fold(String::from("0x"), |mut acc, (index, address_char)| {
-            let n = u16::from_str_radix(&address_hash[index..index + 1], 16).unwrap();
-            if n > 7 {
-                acc.push_str(&address_char.to_uppercase().to_string())
-            } else {
-                acc.push(address_char)
-            }
-            acc
-        })
+    address.char_indices().fold(String::from("0x"), |mut acc, (index, address_char)| {
+        let n = u16::from_str_radix(&address_hash[index..index + 1], 16).unwrap();
+        if n > 7 {
+            acc.push_str(&address_char.to_uppercase().to_string())
+        } else {
+            acc.push(address_char)
+        }
+        acc
+    })
 }
 
 #[cfg(test)]
@@ -50,9 +48,7 @@ mod tests {
     fn test_address_checksum() {
         assert_eq!(
             "0xAC9163b07D9306c2006d81e268Cac57eDfe1A0e9",
-            Address::from_str("0xac9163b07d9306c2006d81e268cac57edfe1a0e9")
-                .unwrap()
-                .to_hex_string()
+            Address::from_str("0xac9163b07d9306c2006d81e268cac57edfe1a0e9").unwrap().to_hex_string()
         )
     }
 }

@@ -4,10 +4,10 @@ use std::time;
 use eyre::Result;
 use sha3::{Digest, Keccak256};
 use web3::api::{Eth, Namespace};
-use web3::contract::{Contract, Options};
 use web3::contract::tokens::Tokenize;
-use web3::ethabi::{Contract as ContractABI, Token};
+use web3::contract::{Contract, Options};
 use web3::ethabi::Hash;
+use web3::ethabi::{Contract as ContractABI, Token};
 use web3::signing::Key;
 use web3::transports::Http;
 use web3::types::{Address, BlockId, BlockNumber, Bytes, TransactionParameters, U256, U64};
@@ -30,19 +30,10 @@ pub struct FxBridge {
 }
 
 impl FxBridge {
-    pub fn new(
-        private_key: Option<PrivateKey>,
-        options: Option<Options>,
-        eth: Eth<Http>,
-        address: Address,
-    ) -> Self {
+    pub fn new(private_key: Option<PrivateKey>, options: Option<Options>, eth: Eth<Http>, address: Address) -> Self {
         let abi: ContractABI = serde_json::from_str(FX_BRIDGE_ABI).expect("invalid FxBridge abi");
         let contract = Contract::new(eth.clone(), address, abi);
-        let options = if options.is_some() {
-            options.unwrap()
-        } else {
-            Options::default()
-        };
+        let options = if options.is_some() { options.unwrap() } else { Options::default() };
         let (private_key, from) = if private_key.is_some() {
             (private_key.clone(), private_key.unwrap().address())
         } else {
@@ -60,13 +51,7 @@ impl FxBridge {
     pub async fn fx_originated_token(&self) -> Result<Address> {
         let result = self
             .contract
-            .query(
-                "state_fxOriginatedToken",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_fxOriginatedToken", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -74,13 +59,7 @@ impl FxBridge {
     pub async fn bridge_tokens(&self, index: U256) -> Result<Address> {
         let result = self
             .contract
-            .query(
-                "bridgeTokens",
-                index,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("bridgeTokens", index, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -88,13 +67,7 @@ impl FxBridge {
     pub async fn check_asset_status(&self, token_addr: Address) -> Result<bool> {
         let result = self
             .contract
-            .query(
-                "checkAssetStatus",
-                token_addr,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("checkAssetStatus", token_addr, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -102,24 +75,12 @@ impl FxBridge {
     pub async fn last_batch_nonce(&self, erc20_address: Address) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "lastBatchNonce",
-                erc20_address,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("lastBatchNonce", erc20_address, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
     ///"Calls the contract's `makeCheckpoint` (0x71cbf381) function"
-    pub async fn make_checkpoint(
-        &self,
-        validators: Vec<Address>,
-        powers: Vec<U256>,
-        valset_nonce: U256,
-        fx_bridge_id: [u8; 32],
-    ) -> Result<[u8; 32]> {
+    pub async fn make_checkpoint(&self, validators: Vec<Address>, powers: Vec<U256>, valset_nonce: U256, fx_bridge_id: [u8; 32]) -> Result<[u8; 32]> {
         let result = self
             .contract
             .query(
@@ -134,29 +95,14 @@ impl FxBridge {
     }
     ///"Calls the contract's `owner` (0x8da5cb5b) function"
     pub async fn owner(&self) -> Result<Address> {
-        let result = self
-            .contract
-            .query(
-                "owner",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
-            .await?;
+        let result = self.contract.query("owner", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest)).await?;
         Ok(result)
     }
     ///"Calls the contract's `state_fxBridgeId` (0xf92367fd) function"
     pub async fn state_fx_bridge_id(&self) -> Result<[u8; 32]> {
         let result = self
             .contract
-            .query(
-                "state_fxBridgeId",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_fxBridgeId", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -164,13 +110,7 @@ impl FxBridge {
     pub async fn state_invalidation_mapping(&self, bytes: [u8; 32]) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "state_invalidationMapping",
-                bytes,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_invalidationMapping", bytes, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -178,13 +118,7 @@ impl FxBridge {
     pub async fn state_last_batch_nonces(&self, address: Address) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "state_lastBatchNonces",
-                address,
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_lastBatchNonces", address, self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -192,13 +126,7 @@ impl FxBridge {
     pub async fn state_last_event_nonce(&self) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "state_lastEventNonce",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_lastEventNonce", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -206,13 +134,7 @@ impl FxBridge {
     pub async fn state_last_valset_checkpoint(&self) -> Result<[u8; 32]> {
         let result = self
             .contract
-            .query(
-                "state_lastValsetCheckpoint",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_lastValsetCheckpoint", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -220,13 +142,7 @@ impl FxBridge {
     pub async fn state_last_valset_nonce(&self) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "state_lastValsetNonce",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_lastValsetNonce", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -234,13 +150,7 @@ impl FxBridge {
     pub async fn state_power_threshold(&self) -> Result<U256> {
         let result = self
             .contract
-            .query(
-                "state_powerThreshold",
-                (),
-                self.from,
-                self.options.clone(),
-                BlockId::Number(BlockNumber::Latest),
-            )
+            .query("state_powerThreshold", (), self.from, self.options.clone(), BlockId::Number(BlockNumber::Latest))
             .await?;
         Ok(result)
     }
@@ -259,15 +169,7 @@ impl FxBridge {
             .contract
             .query(
                 "checkValidatorSignatures",
-                (
-                    current_validators,
-                    current_powers,
-                    v,
-                    r,
-                    s,
-                    the_hash,
-                    power_threshold,
-                ),
+                (current_validators, current_powers, v, r, s, the_hash, power_threshold),
                 self.from,
                 self.options.clone(),
                 BlockId::Number(BlockNumber::Latest),
@@ -282,25 +184,15 @@ impl FxBridge {
     // pub async fn del_bridge_token(&self, token_addr: Address) -> Result<bool> {
     // }
     ///"Calls the contract's `sendToFx` (0xd593c5bf) function"
-    pub async fn send_to_fx(
-        &self,
-        token_contract: Address,
-        destination: [u8; 32],
-        target_ibc: [u8; 32],
-        amount: U256,
-    ) -> Result<TransactionReceipt> {
+    pub async fn send_to_fx(&self, token_contract: Address, destination: [u8; 32], target_ibc: [u8; 32], amount: U256) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
-            return Err(eyre::Error::msg(
-                "no private key to authorize the transaction with",
-            ));
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
         }
         let mut options = self.options.clone();
         options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
             nonce
         } else {
-            self.eth
-                .transaction_count(self.from, Some(BlockNumber::Latest))
-                .await?
+            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
         });
         options.gas_price = if let Some(gas_price) = self.options.gas_price {
             Some(gas_price)
@@ -313,23 +205,13 @@ impl FxBridge {
         } else {
             let gas = self
                 .contract
-                .estimate_gas(
-                    "sendToFx",
-                    (token_contract, destination, target_ibc, amount),
-                    self.from.clone(),
-                    options.clone(),
-                )
+                .estimate_gas("sendToFx", (token_contract, destination, target_ibc, amount), self.from.clone(), options.clone())
                 .await?;
             Some(gas)
         };
 
         let transaction_receipt = self
-            .signed_call_with_confirmations(
-                "sendToFx",
-                (token_contract, destination, target_ibc, amount),
-                options.clone(),
-                TX_CONFIRMATIONS_BLOCK_NUMBER,
-            )
+            .signed_call_with_confirmations("sendToFx", (token_contract, destination, target_ibc, amount), options.clone(), TX_CONFIRMATIONS_BLOCK_NUMBER)
             .await?;
         Ok(transaction_receipt)
     }
@@ -350,17 +232,13 @@ impl FxBridge {
         fee_receive: Address,
     ) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
-            return Err(eyre::Error::msg(
-                "no private key to authorize the transaction with",
-            ));
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
         }
         let mut options = self.options.clone();
         options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
             nonce
         } else {
-            self.eth
-                .transaction_count(self.from, Some(BlockNumber::Latest))
-                .await?
+            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
         });
         options.gas_price = if let Some(gas_price) = self.options.gas_price {
             Some(gas_price)
@@ -433,17 +311,13 @@ impl FxBridge {
         s: Vec<Token>,
     ) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
-            return Err(eyre::Error::msg(
-                "no private key to authorize the transaction with",
-            ));
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
         }
         let mut options = self.options.clone();
         options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
             nonce
         } else {
-            self.eth
-                .transaction_count(self.from, Some(BlockNumber::Latest))
-                .await?
+            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
         });
         options.gas_price = if let Some(gas_price) = self.options.gas_price {
             Some(gas_price)
@@ -479,30 +353,14 @@ impl FxBridge {
         let transaction_receipt = self
             .signed_call_with_confirmations(
                 "updateValset",
-                (
-                    new_validators,
-                    new_powers,
-                    new_valset_nonce,
-                    current_validators,
-                    current_powers,
-                    current_valset_nonce,
-                    v,
-                    r,
-                    s,
-                ),
+                (new_validators, new_powers, new_valset_nonce, current_validators, current_powers, current_valset_nonce, v, r, s),
                 options.clone(),
                 TX_CONFIRMATIONS_BLOCK_NUMBER,
             )
             .await?;
         Ok(transaction_receipt)
     }
-    pub async fn signed_call_with_confirmations(
-        &self,
-        func: &str,
-        params: impl Tokenize,
-        options: Options,
-        confirmations: usize,
-    ) -> Result<TransactionReceipt> {
+    pub async fn signed_call_with_confirmations(&self, func: &str, params: impl Tokenize, options: Options, confirmations: usize) -> Result<TransactionReceipt> {
         let poll_interval = time::Duration::from_secs(10);
         let fn_data = self
             .contract
@@ -533,27 +391,22 @@ impl FxBridge {
             let key = self.private_key.clone().unwrap();
             let signed = accounts.sign_transaction(tx.clone(), key).await?;
 
-            let result = send_raw_transaction_with_confirmation(
-                self.eth.transport().clone(),
-                signed.raw_transaction,
-                poll_interval,
-                confirmations,
-            ).await;
+            let result = send_raw_transaction_with_confirmation(self.eth.transport().clone(), signed.raw_transaction, poll_interval, confirmations).await;
             match result {
-                Ok(receipt) => { return Ok(receipt); }
-                Err(err) => {
-                    match err {
-                        web3::error::Error::Transport(msg) => {
-                            if msg == "Transport error: tx confirm timeout" {
-                                is_timeout = is_timeout + 1;
-                                continue;
-                            }
-                        }
-                        _ => {
-                            return Err(eyre::Report::from(err));
+                Ok(receipt) => {
+                    return Ok(receipt);
+                }
+                Err(err) => match err {
+                    web3::error::Error::Transport(msg) => {
+                        if msg == "Transport error: tx confirm timeout" {
+                            is_timeout = is_timeout + 1;
+                            continue;
                         }
                     }
-                }
+                    _ => {
+                        return Err(eyre::Report::from(err));
+                    }
+                },
             }
         }
     }
@@ -574,12 +427,7 @@ pub async fn query_all_event_san_block(
     web3: &Web3<Http>,
     bridge_addr: Address,
     block_height: U64,
-) -> Result<(
-    Vec<SendToFxEvent>,
-    Vec<TransactionBatchExecutedEvent>,
-    Vec<FxOriginatedTokenEvent>,
-    Vec<ValsetUpdatedEvent>,
-)> {
+) -> Result<(Vec<SendToFxEvent>, Vec<TransactionBatchExecutedEvent>, Vec<FxOriginatedTokenEvent>, Vec<ValsetUpdatedEvent>)> {
     let mut deposits = Vec::new();
     let mut withdraws = Vec::new();
     let mut fx_originated_token = Vec::new();
@@ -615,23 +463,13 @@ pub async fn query_all_event_san_block(
     Ok((deposits, withdraws, fx_originated_token, valset_updated))
 }
 
-
 pub async fn query_all_event(
     web3: &Web3<Http>,
     bridge_addr: Address,
     from_block: U64,
     to_block: Option<U64>,
-) -> Result<(
-    Vec<SendToFxEvent>,
-    Vec<TransactionBatchExecutedEvent>,
-    Vec<FxOriginatedTokenEvent>,
-    Vec<ValsetUpdatedEvent>,
-)> {
-    let to_block = if to_block.is_some() {
-        BlockNumber::Number(to_block.unwrap())
-    } else {
-        BlockNumber::Latest
-    };
+) -> Result<(Vec<SendToFxEvent>, Vec<TransactionBatchExecutedEvent>, Vec<FxOriginatedTokenEvent>, Vec<ValsetUpdatedEvent>)> {
+    let to_block = if to_block.is_some() { BlockNumber::Number(to_block.unwrap()) } else { BlockNumber::Latest };
     let filter_builder = FilterBuilder::default()
         .address(vec![bridge_addr])
         .from_block(BlockNumber::Number(from_block))
@@ -669,27 +507,13 @@ pub async fn query_all_event(
     Ok((deposits, withdraws, fx_originated_token, valset_updated))
 }
 
-pub async fn query_valset_updated_event(
-    web3: &Web3<Http>,
-    bridge_addr: Address,
-    from_block: U64,
-    to_block: Option<U64>,
-) -> Result<Vec<ValsetUpdatedEvent>> {
-    let to_block = if to_block.is_some() {
-        BlockNumber::Number(to_block.unwrap())
-    } else {
-        BlockNumber::Latest
-    };
+pub async fn query_valset_updated_event(web3: &Web3<Http>, bridge_addr: Address, from_block: U64, to_block: Option<U64>) -> Result<Vec<ValsetUpdatedEvent>> {
+    let to_block = if to_block.is_some() { BlockNumber::Number(to_block.unwrap()) } else { BlockNumber::Latest };
     let filter_builder = FilterBuilder::default()
         .address(vec![bridge_addr])
         .from_block(BlockNumber::Number(from_block))
         .to_block(to_block)
-        .topics(
-            Option::from(vec![ValsetUpdatedEvent::signature()]),
-            None,
-            None,
-            None,
-        );
+        .topics(Option::from(vec![ValsetUpdatedEvent::signature()]), None, None, None);
     let logs = web3.eth().logs(filter_builder.build()).await?;
     let mut valset_updated = Vec::new();
     for log in logs {
@@ -714,12 +538,7 @@ pub struct FxOriginatedTokenEvent {
 
 impl FxOriginatedTokenEvent {
     pub fn signature() -> Hash {
-        Hash::from_slice(
-            Keccak256::digest(
-                "FxOriginatedTokenEvent(address,string,string,uint8,uint256)".as_bytes(),
-            )
-                .as_slice(),
-        )
+        Hash::from_slice(Keccak256::digest("FxOriginatedTokenEvent(address,string,string,uint8,uint256)".as_bytes()).as_slice())
     }
 
     pub fn from_log(input: &Log) -> Result<FxOriginatedTokenEvent> {
@@ -754,9 +573,7 @@ impl FxOriginatedTokenEvent {
             let block_number = if let Some(bn) = input.block_number.clone() {
                 bn
             } else {
-                return Err(eyre::Error::msg(
-                    "Log does not have block number, we only search logs already in blocks?",
-                ));
+                return Err(eyre::Error::msg("Log does not have block number, we only search logs already in blocks?"));
             };
             Ok(FxOriginatedTokenEvent {
                 erc20,
@@ -790,10 +607,7 @@ pub struct ValsetUpdatedEvent {
 
 impl ValsetUpdatedEvent {
     pub fn signature() -> Hash {
-        Hash::from_slice(
-            Keccak256::digest("ValsetUpdatedEvent(uint256,uint256,address[],uint256[])".as_bytes())
-                .as_slice(),
-        )
+        Hash::from_slice(Keccak256::digest("ValsetUpdatedEvent(uint256,uint256,address[],uint256[])".as_bytes()).as_slice())
     }
 
     pub fn from_log(input: &Log) -> Result<ValsetUpdatedEvent> {
@@ -839,9 +653,7 @@ impl ValsetUpdatedEvent {
         let block_number = if let Some(bn) = input.block_number.clone() {
             bn
         } else {
-            return Err(eyre::Error::msg(
-                "Log does not have block number, we only search logs already in blocks?",
-            ));
+            return Err(eyre::Error::msg("Log does not have block number, we only search logs already in blocks?"));
         };
 
         Ok(ValsetUpdatedEvent {
@@ -874,12 +686,7 @@ pub struct SendToFxEvent {
 
 impl SendToFxEvent {
     pub fn signature() -> Hash {
-        Hash::from_slice(
-            Keccak256::digest(
-                "SendToFxEvent(address,address,bytes32,bytes32,uint256,uint256)".as_bytes(),
-            )
-                .as_slice(),
-        )
+        Hash::from_slice(Keccak256::digest("SendToFxEvent(address,address,bytes32,bytes32,uint256,uint256)".as_bytes()).as_slice())
     }
 
     pub fn from_log(input: &Log) -> Result<SendToFxEvent> {
@@ -887,11 +694,7 @@ impl SendToFxEvent {
             return Err(eyre::Error::msg("Invalid log topics"));
         }
 
-        if let (Some(erc20_data), Some(sender_data), Some(destination_data)) = (
-            input.topics.get(1),
-            input.topics.get(2),
-            input.topics.get(3),
-        ) {
+        if let (Some(erc20_data), Some(sender_data), Some(destination_data)) = (input.topics.get(1), input.topics.get(2), input.topics.get(3)) {
             let erc20 = Address::from_slice(&erc20_data[12..32]);
             let sender = Address::from_slice(&sender_data[12..32]);
 
@@ -919,9 +722,7 @@ impl SendToFxEvent {
             let block_number = if let Some(bn) = input.block_number.clone() {
                 bn
             } else {
-                return Err(eyre::Error::msg(
-                    "Log does not have block number, we only search logs already in blocks?",
-                ));
+                return Err(eyre::Error::msg("Log does not have block number, we only search logs already in blocks?"));
             };
 
             Ok(SendToFxEvent {
@@ -957,28 +758,21 @@ pub struct TransactionBatchExecutedEvent {
 
 impl TransactionBatchExecutedEvent {
     pub fn signature() -> Hash {
-        Hash::from_slice(
-            Keccak256::digest("TransactionBatchExecutedEvent(uint256,address,uint256)".as_bytes())
-                .as_slice(),
-        )
+        Hash::from_slice(Keccak256::digest("TransactionBatchExecutedEvent(uint256,address,uint256)".as_bytes()).as_slice())
     }
 
     pub fn from_log(input: &Log) -> Result<TransactionBatchExecutedEvent> {
         if input.topics.len() != 3 {
             return Err(eyre::Error::msg("Invalid log topics"));
         }
-        if let (Some(batch_nonce_data), Some(erc20_data)) =
-        (input.topics.get(1), input.topics.get(2))
-        {
+        if let (Some(batch_nonce_data), Some(erc20_data)) = (input.topics.get(1), input.topics.get(2)) {
             let batch_nonce = U256::from(batch_nonce_data.as_bytes());
             let erc20 = Address::from_slice(&erc20_data[12..32]);
             let event_nonce = U256::from(input.data.0.as_slice());
             let block_number = if let Some(bn) = input.block_number.clone() {
                 bn
             } else {
-                return Err(eyre::Error::msg(
-                    "Log does not have block number, we only search logs already in blocks?",
-                ));
+                return Err(eyre::Error::msg("Log does not have block number, we only search logs already in blocks?"));
             };
             Ok(TransactionBatchExecutedEvent {
                 batch_nonce,
@@ -1025,12 +819,7 @@ mod tests {
 
         let private_key = PrivateKey::new(secret_key);
 
-        let fx_bridge = FxBridge::new(
-            Some(private_key),
-            Option::default(),
-            web3.eth(),
-            bridge_addr,
-        );
+        let fx_bridge = FxBridge::new(Some(private_key), Option::default(), web3.eth(), bridge_addr);
         println!("{:?}", fx_bridge);
     }
 
@@ -1045,12 +834,7 @@ mod tests {
 
         let private_key = PrivateKey::new(secret_key);
 
-        let fx_bridge = FxBridge::new(
-            Some(private_key),
-            Option::default(),
-            web3.eth(),
-            bridge_addr,
-        );
+        let fx_bridge = FxBridge::new(Some(private_key), Option::default(), web3.eth(), bridge_addr);
 
         let last_valset_nonce = fx_bridge.state_last_valset_nonce().await.unwrap();
         println!("{:?}", last_valset_nonce);
@@ -1067,35 +851,23 @@ mod tests {
 
         let private_key = PrivateKey::new(secret_key);
 
-        let fx_bridge = FxBridge::new(
-            Some(private_key),
-            Option::default(),
-            web3.eth(),
-            bridge_addr,
-        );
+        let fx_bridge = FxBridge::new(Some(private_key), Option::default(), web3.eth(), bridge_addr);
 
         let fx_bridge_id = fx_bridge.state_fx_bridge_id().await.unwrap();
         println!("{:?}", fx_bridge_id);
         println!("{:?}", String::from_utf8(fx_bridge_id.into()).unwrap());
-        println!(
-            "{:?}",
-            Token::FixedBytes(FixedBytes::from(fx_bridge_id.to_vec()))
-        );
+        println!("{:?}", Token::FixedBytes(FixedBytes::from(fx_bridge_id.to_vec())));
     }
 
     /*=============== Event Test ===============*/
 
     #[tokio::test]
     async fn test_query_fx_bridge_all_event() {
-        let transport = web3::transports::Http::new(
-            "http://127.0.0.1:8545",
-        )
-            .unwrap();
+        let transport = web3::transports::Http::new("http://127.0.0.1:8545").unwrap();
         let web3 = web3::Web3::new(transport);
 
         let bridge_addr = Address::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
-        let result =
-            query_all_event(&web3, bridge_addr, 25250855.into(), Some(25250855.into())).await;
+        let result = query_all_event(&web3, bridge_addr, 25250855.into(), Some(25250855.into())).await;
         if result.is_err() {
             println!("{:?}", result.unwrap_err().root_cause());
         } else {
@@ -1113,10 +885,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_query_all_event_san_block() {
-        let transport = web3::transports::Http::new(
-            "http://127.0.0.1:8545",
-        )
-            .unwrap();
+        let transport = web3::transports::Http::new("http://127.0.0.1:8545").unwrap();
         let web3 = web3::Web3::new(transport);
 
         let bridge_addr = Address::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
@@ -1155,15 +924,9 @@ mod tests {
   }
 "#).unwrap();
         // println!("{:x}", FxOriginatedTokenEvent::signature());
-        assert_eq!(
-            res.topics.first().unwrap(),
-            &FxOriginatedTokenEvent::signature()
-        );
+        assert_eq!(res.topics.first().unwrap(), &FxOriginatedTokenEvent::signature());
         let event = FxOriginatedTokenEvent::from_log(&res).unwrap();
-        assert_eq!(
-            event.erc20,
-            Address::from_str("0xe0d11fe9721c610d99ab46fd19594b478ee8abfb").unwrap()
-        );
+        assert_eq!(event.erc20, Address::from_str("0xe0d11fe9721c610d99ab46fd19594b478ee8abfb").unwrap());
         assert_eq!(event.name, "FunctionX Chain".to_string());
         assert_eq!(event.symbol, "FX".to_string());
         assert_eq!(event.decimals, U256::from(18));
@@ -1189,17 +952,11 @@ mod tests {
     "blockHash": "0xe390492be21e4c23aac9f08c422b90b78a1987691255f3a5bc8ff4398958a73b"
   }
 "#).unwrap();
-        assert_eq!(
-            res.topics.first().unwrap(),
-            &ValsetUpdatedEvent::signature()
-        );
+        assert_eq!(res.topics.first().unwrap(), &ValsetUpdatedEvent::signature());
         let event = ValsetUpdatedEvent::from_log(&res).unwrap();
         assert_eq!(event.valset_nonce, 0.into());
         assert_eq!(event.event_nonce, 2.into());
-        assert_eq!(
-            event.validators[0],
-            Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap()
-        );
+        assert_eq!(event.validators[0], Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap());
         assert_eq!(event.powers[0], U256::from(10000));
         assert_eq!(event.block_number, U64::from(18));
     }
@@ -1226,18 +983,9 @@ mod tests {
 "#).unwrap();
         assert_eq!(res.topics.first().unwrap(), &SendToFxEvent::signature());
         let event = SendToFxEvent::from_log(&res).unwrap();
-        assert_eq!(
-            event.erc20,
-            Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap()
-        );
-        assert_eq!(
-            event.sender,
-            Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap()
-        );
-        assert_eq!(
-            event.destination,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        );
+        assert_eq!(event.erc20, Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap());
+        assert_eq!(event.sender, Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap());
+        assert_eq!(event.destination, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
         assert_eq!(event.target_ibc, hex::encode("pay/transfer/channel-0"));
         assert_eq!(event.block_number, U64::from(17));
         assert_eq!(event.amount, U256::from(1000));
@@ -1266,18 +1014,9 @@ mod tests {
 "#).unwrap();
         assert_eq!(res.topics.first().unwrap(), &SendToFxEvent::signature());
         let event = SendToFxEvent::from_log(&res).unwrap();
-        assert_eq!(
-            event.erc20,
-            Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap()
-        );
-        assert_eq!(
-            event.sender,
-            Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap()
-        );
-        assert_eq!(
-            event.destination,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-        );
+        assert_eq!(event.erc20, Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap());
+        assert_eq!(event.sender, Address::from_str("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752").unwrap());
+        assert_eq!(event.destination, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
         assert_eq!(event.target_ibc, "".to_string());
         assert_eq!(event.block_number, U64::from(17));
         assert_eq!(event.amount, U256::from(1000));
@@ -1304,17 +1043,11 @@ mod tests {
   }
 "#,
         )
-            .unwrap();
-        assert_eq!(
-            res.topics.first().unwrap(),
-            &TransactionBatchExecutedEvent::signature()
-        );
+        .unwrap();
+        assert_eq!(res.topics.first().unwrap(), &TransactionBatchExecutedEvent::signature());
         let event = TransactionBatchExecutedEvent::from_log(&res).unwrap();
 
-        assert_eq!(
-            event.erc20,
-            Address::from_str("0x038b86d9d8fafdd0a02ebd1a476432877b0107c8").unwrap()
-        );
+        assert_eq!(event.erc20, Address::from_str("0x038b86d9d8fafdd0a02ebd1a476432877b0107c8").unwrap());
         assert_eq!(event.batch_nonce, U256::from(1));
         assert_eq!(event.event_nonce, U256::from(2));
         assert_eq!(event.block_number, U64::from(18))
@@ -1322,10 +1055,7 @@ mod tests {
 
     #[test]
     fn test_vue_to_string() {
-        let data = FixedBytes::from_hex(
-            "000000000000000000000000120226a55c07fbebd8c7a3a73a85438b78e009a7",
-        )
-            .unwrap();
+        let data = FixedBytes::from_hex("000000000000000000000000120226a55c07fbebd8c7a3a73a85438b78e009a7").unwrap();
         println!("{:?}", data);
         println!("{:?}", String::from_utf8(data.clone()));
         unsafe {

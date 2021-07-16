@@ -1,5 +1,5 @@
 use cosmos_sdk_proto::cosmos::tx::signing::v1beta1::SignMode;
-use cosmos_sdk_proto::cosmos::tx::v1beta1::{Fee, mode_info, ModeInfo};
+use cosmos_sdk_proto::cosmos::tx::v1beta1::{mode_info, Fee, ModeInfo};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{AuthInfo, SignDoc, SignerInfo, Tx, TxBody};
 use eyre::Result;
 use prost_types::Any;
@@ -22,12 +22,7 @@ pub struct Builder {
 
 impl Builder {
     /// Create a new transaction builder
-    pub fn new(
-        chain_id: impl Into<chain::Id>,
-        private_key: PrivateKey,
-        account_number: u64,
-        fees_denom: &str,
-    ) -> Self {
+    pub fn new(chain_id: impl Into<chain::Id>, private_key: PrivateKey, account_number: u64, fees_denom: &str) -> Self {
         Builder {
             chain_id: chain_id.into(),
             private_key,
@@ -37,23 +32,14 @@ impl Builder {
         }
     }
 
-    pub async fn from_net(
-        grpc_channel: &Channel,
-        fx_private_key: PrivateKey,
-        fees_denom: &str,
-    ) -> eyre::Result<Self> {
+    pub async fn from_net(grpc_channel: &Channel, fx_private_key: PrivateKey, fees_denom: &str) -> eyre::Result<Self> {
         let fx_address = fx_private_key.public_key().to_address().to_string();
         let fx_account = get_account_info(&grpc_channel, fx_address).await?;
         info!("Fx chain account address {}, account number {}", fx_account.address, fx_account.account_number);
 
         let chain_id = get_chain_id(&grpc_channel).await?;
         info!("Fx chain id {}, use fee denom {}", chain_id, fees_denom);
-        Ok(Builder::new(
-            chain_id,
-            fx_private_key,
-            fx_account.account_number,
-            fees_denom,
-        ))
+        Ok(Builder::new(chain_id, fx_private_key, fx_account.account_number, fees_denom))
     }
 
     pub fn with_memo(&mut self, memo: String) -> &mut Builder {
@@ -82,13 +68,7 @@ impl Builder {
     }
 
     /// Build and sign a transaction containing the given messages
-    pub fn sign_tx(
-        &self,
-        sequence: u64,
-        messages: Vec<Any>,
-        fee: Fee,
-        timeout_height: block::Height,
-    ) -> Result<Tx> {
+    pub fn sign_tx(&self, sequence: u64, messages: Vec<Any>, fee: Fee, timeout_height: block::Height) -> Result<Tx> {
         let body = TxBody {
             messages,
             memo: self.memo.clone(),
@@ -101,9 +81,7 @@ impl Builder {
         let pk = self.private_key.public_key();
         let pk_any = pk.to_any()?;
 
-        let single = mode_info::Single {
-            mode: SignMode::Direct as i32,
-        };
+        let single = mode_info::Single { mode: SignMode::Direct as i32 };
         let mode = ModeInfo {
             sum: Some(mode_info::Sum::Single(single)),
         };

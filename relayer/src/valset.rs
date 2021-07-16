@@ -146,11 +146,7 @@ pub struct Valset {
 }
 
 impl Valset {
-    fn get_signature_status<T: Confirm + Clone + Debug>(
-        &self,
-        message: &[u8],
-        signatures: &[T],
-    ) -> Result<SignatureStatus> {
+    fn get_signature_status<T: Confirm + Clone + Debug>(&self, message: &[u8], signatures: &[T]) -> Result<SignatureStatus> {
         if signatures.is_empty() {
             return Err(eyre::Error::msg("No signatures!".to_string()));
         }
@@ -212,11 +208,7 @@ impl Valset {
         })
     }
 
-    pub fn order_signatures<T: Confirm + Clone + Debug>(
-        &self,
-        message: &[u8],
-        signatures: &[T],
-    ) -> Result<Vec<GravitySignature>> {
+    pub fn order_signatures<T: Confirm + Clone + Debug>(&self, message: &[u8], signatures: &[T]) -> Result<Vec<GravitySignature>> {
         let status = self.get_signature_status(message, signatures)?;
         if gravity_power_to_percent(status.power_of_good_sigs) < THRESHOLD_VOTE_POWER {
             let err = format!(

@@ -18,14 +18,7 @@ use fxchain::x::gravity::{QueryValsetConfirmsByNonceRequest, QueryValsetRequestR
 
 use crate::valset::{Valset, ValsetConfirmResponse};
 
-pub async fn relay_valsets(
-    current_valset: Valset,
-    eth_private_key: &EthPrivateKey,
-    web3: &Web3<Http>,
-    grpc_channel: &Channel,
-    bridge_addr: EthAddress,
-    gravity_id: &String,
-) {
+pub async fn relay_valsets(current_valset: Valset, eth_private_key: &EthPrivateKey, web3: &Web3<Http>, grpc_channel: &Channel, bridge_addr: EthAddress, gravity_id: &String) {
     let expect = U256::from(5).mul(U256::from(10).pow(U256::from(17)));
     let is_enough = check_for_ether(&web3, eth_private_key.address(), expect).await;
     if !is_enough {
@@ -34,9 +27,7 @@ pub async fn relay_valsets(
 
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
 
-    let result = gravity_query_client
-        .last_valset_requests(QueryLastValsetRequestsRequest {})
-        .await;
+    let result = gravity_query_client.last_valset_requests(QueryLastValsetRequestsRequest {}).await;
     if result.is_err() {
         error!("Failed to get last valsets from fx chain {:?}", result.err());
         return;
@@ -49,66 +40,34 @@ pub async fn relay_valsets(
 
     let mut latest_nonce = last_valsets[0].nonce;
     if latest_nonce == current_valset.nonce {
-        debug!(
-            "There is no valset update on the fx chain, {:?}",
-            last_valsets.len()
-        );
+        debug!("There is no valset update on the fx chain, {:?}", last_valsets.len());
         return;
     }
     if latest_nonce < current_valset.nonce {
-        error!(
-            "Latest nonce less than current valset nonce, {:?} < {:?}",
-            latest_nonce, current_valset
-        );
+        error!("Latest nonce less than current valset nonce, {:?} < {:?}", latest_nonce, current_valset);
         return;
     }
 
-    info!(
-        "Found last valset update nonce {}, current valset nonce {}",
-        latest_nonce, current_valset.nonce
-    );
+    info!("Found last valset update nonce {}, current valset nonce {}", latest_nonce, current_valset.nonce);
 
     let mut latest_confirmed = None;
     let mut latest_valset = None;
     while latest_nonce > 0 {
-        let result = gravity_query_client
-            .valset_request(QueryValsetRequestRequest {
-                nonce: latest_nonce,
-            })
-            .await;
+        let result = gravity_query_client.valset_request(QueryValsetRequestRequest { nonce: latest_nonce }).await;
         if result.is_err() {
-            error!(
-                "Query valset request from nonce {} failed {:?}",
-                latest_nonce,
-                result.err()
-            );
+            error!("Query valset request from nonce {} failed {:?}", latest_nonce, result.err());
             return;
         }
         if let Some(valset) = result.unwrap().into_inner().valset {
-            info!(
-                "Query valset request from nonce {} success, height {}",
-                valset.nonce, valset.height
-            );
-            let result = gravity_query_client
-                .valset_confirms_by_nonce(QueryValsetConfirmsByNonceRequest {
-                    nonce: latest_nonce,
-                })
-                .await;
+            info!("Query valset request from nonce {} success, height {}", valset.nonce, valset.height);
+            let result = gravity_query_client.valset_confirms_by_nonce(QueryValsetConfirmsByNonceRequest { nonce: latest_nonce }).await;
             if result.is_err() {
-                error!(
-                    "Query valset confirm from nonce {} failed {:?}",
-                    latest_nonce,
-                    result.err()
-                );
+                error!("Query valset confirm from nonce {} failed {:?}", latest_nonce, result.err());
                 return;
             }
             let valset_confirms = result.unwrap().into_inner().confirms;
             if !valset_confirms.is_empty() {
-                info!(
-                    "Query valset confirm from nonce {} len {}",
-                    latest_nonce,
-                    valset_confirms.len()
-                );
+                info!("Query valset confirm from nonce {} len {}", latest_nonce, valset_confirms.len());
                 let mut confirms = Vec::new();
                 for item in valset_confirms {
                     let response = ValsetConfirmResponse::from_proto(item).unwrap();
@@ -144,9 +103,7 @@ pub async fn relay_valsets(
         let mut new_powers = Vec::new();
         let new_valset_nonce = U256::from(latest_fx_valset.nonce);
         for item in latest_fx_valset.members {
-            new_validators.push(Token::Address(
-                EthAddress::from_str(item.eth_address.as_str()).unwrap(),
-            ));
+            new_validators.push(Token::Address(EthAddress::from_str(item.eth_address.as_str()).unwrap()));
             new_powers.push(Token::Uint(U256::from(item.power)));
         }
 
@@ -165,15 +122,9 @@ pub async fn relay_valsets(
             let mut found = false;
             for item in latest_fx_confirmed.iter() {
                 if item.eth_address.to_hex_string() == member.eth_address.to_hex_string() {
-                    v.push(Token::Uint(U256::from(
-                        item.eth_signature.v.to_le_bytes()[0],
-                    )));
-                    r.push(Token::FixedBytes(FixedBytes::from(
-                        item.eth_signature.r.as_bytes(),
-                    )));
-                    s.push(Token::FixedBytes(FixedBytes::from(
-                        item.eth_signature.s.as_bytes(),
-                    )));
+                    v.push(Token::Uint(U256::from(item.eth_signature.v.to_le_bytes()[0])));
+                    r.push(Token::FixedBytes(FixedBytes::from(item.eth_signature.r.as_bytes())));
+                    s.push(Token::FixedBytes(FixedBytes::from(item.eth_signature.s.as_bytes())));
                     found = true;
                     break;
                 }
@@ -186,20 +137,9 @@ pub async fn relay_valsets(
             }
         }
 
-        let bridge_contract =
-            FxBridge::new(Some(eth_private_key.clone()), None, web3.eth(), bridge_addr);
+        let bridge_contract = FxBridge::new(Some(eth_private_key.clone()), None, web3.eth(), bridge_addr);
         let result = bridge_contract
-            .update_valset(
-                new_validators,
-                new_powers,
-                new_valset_nonce,
-                current_validators,
-                current_powers,
-                current_valset_nonce,
-                v,
-                r,
-                s,
-            )
+            .update_valset(new_validators, new_powers, new_valset_nonce, current_validators, current_powers, current_valset_nonce, v, r, s)
             .await;
         match result {
             Ok(receipt) => {
@@ -229,34 +169,18 @@ mod tests {
 
         let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
 
-        let response = gravity_query_client
-            .params(QueryParamsRequest {})
-            .await
-            .unwrap();
+        let response = gravity_query_client.params(QueryParamsRequest {}).await.unwrap();
 
         let gravity_id = response.into_inner().params.unwrap().gravity_id;
 
-        let response = gravity_query_client
-            .last_valset_requests(QueryLastValsetRequestsRequest {})
-            .await
-            .unwrap();
+        let response = gravity_query_client.last_valset_requests(QueryLastValsetRequestsRequest {}).await.unwrap();
 
         let latest_nonce = response.into_inner().valsets[0].nonce;
 
-        let response = gravity_query_client
-            .valset_request(QueryValsetRequestRequest {
-                nonce: latest_nonce,
-            })
-            .await
-            .unwrap();
+        let response = gravity_query_client.valset_request(QueryValsetRequestRequest { nonce: latest_nonce }).await.unwrap();
 
         for valset in response.into_inner().valset.iter() {
-            let response = gravity_query_client
-                .valset_confirms_by_nonce(QueryValsetConfirmsByNonceRequest {
-                    nonce: latest_nonce,
-                })
-                .await
-                .unwrap();
+            let response = gravity_query_client.valset_confirms_by_nonce(QueryValsetConfirmsByNonceRequest { nonce: latest_nonce }).await.unwrap();
 
             let mut confirms = Vec::new();
             for item in response.into_inner().confirms.iter() {

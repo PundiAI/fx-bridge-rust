@@ -25,9 +25,7 @@ impl PrivateKey {
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let signing_key = k256::ecdsa::SigningKey::from_bytes(bytes)?;
-        Ok(Self {
-            inner: Box::new(signing_key),
-        })
+        Ok(Self { inner: Box::new(signing_key) })
     }
 
     pub fn from_secsret(secret: &[u8]) -> Result<PrivateKey> {
@@ -168,12 +166,7 @@ fn master_key_from_seed(seed_bytes: &[u8]) -> ([u8; 32], [u8; 32]) {
     (master_secret_key, master_chain_code)
 }
 
-fn get_child_key(
-    k_parent: [u8; 32],
-    c_parent: [u8; 32],
-    i: u32,
-    hardened: bool,
-) -> ([u8; 32], [u8; 32]) {
+fn get_child_key(k_parent: [u8; 32], c_parent: [u8; 32], i: u32, hardened: bool) -> ([u8; 32], [u8; 32]) {
     use hmac::crypto_mac::Mac;
     use hmac::crypto_mac::NewMac;
     use hmac::Hmac;
@@ -229,7 +222,6 @@ mod tests {
 
     #[test]
     fn test_many_key_generation() {
-
         for _ in 0..1000 {
             let private_key = PrivateKey::random();
             let _address = private_key.public_key().to_address();

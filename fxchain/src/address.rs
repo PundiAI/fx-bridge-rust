@@ -86,9 +86,7 @@ impl FromStr for Address {
 impl Serialize for Address {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         // Serialize address as a string with a default prefix for addresses
-        let s = self
-            .to_bech32(DEFAULT_BECH32_PREFIX)
-            .map_err(serde::ser::Error::custom)?;
+        let s = self.to_bech32(DEFAULT_BECH32_PREFIX).map_err(serde::ser::Error::custom)?;
         serializer.serialize_str(&s)
     }
 }
@@ -112,19 +110,14 @@ mod tests {
     #[test]
     fn test_default_address_to_bech32() {
         let address = Address::default();
-        assert_eq!(
-            address.to_bech32(DEFAULT_BECH32_PREFIX).unwrap(),
-            "fx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfn322v"
-        );
-        let address2 =
-            Address::from_bech32("fx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfn322v".to_string()).unwrap();
+        assert_eq!(address.to_bech32(DEFAULT_BECH32_PREFIX).unwrap(), "fx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfn322v");
+        let address2 = Address::from_bech32("fx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfn322v".to_string()).unwrap();
         assert_eq!(address, address2);
     }
 
     #[test]
     fn test_bech32_to_address() {
-        let address =
-            Address::from_bech32("fx1zgpzdf2uqla7hkx85wnn4p2r3duwqzd8xst6v2".to_string()).unwrap();
+        let address = Address::from_bech32("fx1zgpzdf2uqla7hkx85wnn4p2r3duwqzd8xst6v2".to_string()).unwrap();
         let address1 = Address::from_bytes(address.0);
         assert_eq!(address, address1)
     }

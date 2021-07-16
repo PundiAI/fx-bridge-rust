@@ -7,11 +7,7 @@ use crate::address::Checksum;
 
 pub async fn check_for_ether(web3: &Web3<Http>, account: Address, expect: U256) -> bool {
     let balance = web3.eth().balance(account, None).await.unwrap();
-    debug!(
-        "Ethereum account {} balance {} ether",
-        account.to_hex_string(),
-        balance
-    );
+    debug!("Ethereum account {} balance {} ether", account.to_hex_string(), balance);
     if balance.is_zero() || balance.le(&expect) {
         return false;
     }
@@ -41,19 +37,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_check_for_ether() {
-        env_logger::builder()
-            .filter_module("ethereum::client", log::LevelFilter::Trace)
-            .init();
+        env_logger::builder().filter_module("ethereum::client", log::LevelFilter::Trace).init();
 
         let transport = web3::transports::Http::new(ETH_RPC_URL).unwrap();
         let web3 = web3::Web3::new(transport);
 
         let mut accounts = web3.eth().accounts().await.unwrap();
-        accounts.push(
-            "0xb4fA5979babd8Bb7e427157d0d353Cf205F43752"
-                .parse()
-                .unwrap(),
-        );
+        accounts.push("0xb4fA5979babd8Bb7e427157d0d353Cf205F43752".parse().unwrap());
 
         for account in accounts {
             check_for_ether(&web3, account, U256::from(10)).await;
@@ -70,7 +60,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_eth_gas_price(){
+    async fn test_eth_gas_price() {
         let transport = web3::transports::Http::new("").unwrap();
         let web3 = web3::Web3::new(transport);
         let gas_price = web3.eth().gas_price().await.unwrap();

@@ -4,8 +4,8 @@ extern crate log;
 use std::time::Duration;
 
 pub mod oracle_loop;
-pub mod singer_loop;
 pub mod send_to_fx;
+pub mod singer_loop;
 
 const ETH_AVG_BLOCK_TIME: Duration = Duration::from_secs(30);
 

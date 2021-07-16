@@ -32,9 +32,7 @@ impl PublicKey {
     pub fn to_any(&self) -> Result<Any> {
         match self.0 {
             tendermint::PublicKey::Ed25519(_) => {
-                let pub_key = cosmos::crypto::secp256k1::PubKey {
-                    key: self.to_bytes(),
-                };
+                let pub_key = cosmos::crypto::secp256k1::PubKey { key: self.to_bytes() };
 
                 Ok(Any {
                     type_url: ED25519_TYPE_URL.to_owned(),
@@ -42,9 +40,7 @@ impl PublicKey {
                 })
             }
             tendermint::PublicKey::Secp256k1(_) => {
-                let pub_key = cosmos::crypto::secp256k1::PubKey {
-                    key: self.to_bytes(),
-                };
+                let pub_key = cosmos::crypto::secp256k1::PubKey { key: self.to_bytes() };
 
                 Ok(Any {
                     type_url: SECP256K1_TYPE_URL.to_owned(),
@@ -76,10 +72,7 @@ impl TryFrom<&Any> for PublicKey {
             SECP256K1_TYPE_URL => tendermint::PublicKey::from_raw_secp256k1(&any.value)
                 .map(Into::into)
                 .ok_or_else(|| eyre::Error::msg("cryptographic error")),
-            other => Err(eyre::Error::msg(format!(
-                "invalid type URL for public key: {}",
-                other
-            ))),
+            other => Err(eyre::Error::msg(format!("invalid type URL for public key: {}", other))),
         }
     }
 }

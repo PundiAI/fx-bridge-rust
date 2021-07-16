@@ -7,10 +7,10 @@ use std::time::Duration;
 pub mod address;
 pub mod chainlink;
 pub mod client;
+mod confirm_tx;
 pub mod erc20;
 pub mod fx_bridge;
 pub mod private_key;
-mod confirm_tx;
 
 const TX_CONFIRMATIONS_BLOCK_NUMBER: usize = 1;
 

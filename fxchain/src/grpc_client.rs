@@ -27,24 +27,14 @@ use crate::address::Address as FxAddress;
 use crate::builder::Builder;
 use crate::proto_ext::{unpack_any, MessageExt};
 use crate::x::gravity::query_client::QueryClient as GravityQueryClient;
-use crate::x::gravity::{
-    QueryLastEventBlockHeightByAddrRequest, QueryLastEventNonceByAddrRequest,
-    QueryLastObservedEthBlockHeightRequest, QueryParamsRequest,
-};
+use crate::x::gravity::{QueryLastEventBlockHeightByAddrRequest, QueryLastEventNonceByAddrRequest, QueryLastObservedEthBlockHeightRequest, QueryParamsRequest};
 use crate::x::other::query_client::QueryClient as OtherQueryClient;
 use crate::x::other::GasPriceRequest;
-use crate::{
-    DEFAULT_GAS_LIMIT, DEFAULT_TX_TIMEOUT_HEIGHT, FX_MSG_MAX_NUMBER, GAS_LIMIT_MULTIPLIER,
-    GAS_LIMIT_MULTIPLIER_PRO,
-};
+use crate::{DEFAULT_GAS_LIMIT, DEFAULT_TX_TIMEOUT_HEIGHT, FX_MSG_MAX_NUMBER, GAS_LIMIT_MULTIPLIER, GAS_LIMIT_MULTIPLIER_PRO};
 
 /* ============================== gRPC ============================== */
 
-pub async fn send_tx(
-    builder: &Builder,
-    grpc_channel: &Channel,
-    msgs: Vec<Any>,
-) -> Result<TxResponse> {
+pub async fn send_tx(builder: &Builder, grpc_channel: &Channel, msgs: Vec<Any>) -> Result<TxResponse> {
     let sequence = builder.get_next_sequence(grpc_channel).await?;
 
     let mut fee = Fee {
@@ -56,10 +46,7 @@ pub async fn send_tx(
     let gas_price = get_gas_price_by_denom(grpc_channel, builder.get_fee_denom()).await?;
     fee.amount = vec![Coin {
         denom: gas_price.denom.clone(),
-        amount: BigInt::from_str(gas_price.amount.as_str())
-            .unwrap()
-            .mul(fee.gas_limit)
-            .to_string(),
+        amount: BigInt::from_str(gas_price.amount.as_str()).unwrap().mul(fee.gas_limit).to_string(),
     }];
 
     let timeout_height = block::Height::from(DEFAULT_TX_TIMEOUT_HEIGHT);
@@ -67,11 +54,7 @@ pub async fn send_tx(
     let tx = builder.sign_tx(sequence, msgs.clone(), fee.clone(), timeout_height)?;
 
     let gas_info = estimating_gas_usage(grpc_channel, tx.clone()).await?;
-    trace!(
-        "Fx chain tx estimating gas used {}, wanted {}",
-        gas_info.gas_used,
-        gas_info.gas_wanted
-    );
+    trace!("Fx chain tx estimating gas used {}, wanted {}", gas_info.gas_used, gas_info.gas_wanted);
 
     if msgs.len() >= FX_MSG_MAX_NUMBER {
         fee.gas_limit = gas_info.gas_used * GAS_LIMIT_MULTIPLIER_PRO;
@@ -80,16 +63,9 @@ pub async fn send_tx(
     }
     fee.amount = vec![Coin {
         denom: gas_price.denom,
-        amount: BigInt::from_str(gas_price.amount.as_str())
-            .unwrap()
-            .mul(fee.gas_limit)
-            .to_string(),
+        amount: BigInt::from_str(gas_price.amount.as_str()).unwrap().mul(fee.gas_limit).to_string(),
     }];
-    trace!(
-        "Send fx chain tx gas limit {}, amount {:?}",
-        fee.gas_limit,
-        fee.amount
-    );
+    trace!("Send fx chain tx gas limit {}, amount {:?}", fee.gas_limit, fee.amount);
 
     let tx = builder.sign_tx(sequence, msgs, fee, timeout_height)?;
 
@@ -115,10 +91,7 @@ pub async fn send_tx(
 pub async fn new_grpc_channel(grpc_url: &str) -> Result<Channel> {
     let url = Url::parse(grpc_url)?;
     if url.scheme() != "http" && url.scheme() != "https" && url.scheme() != "tcp" {
-        return Err(Error::msg(format!(
-            "Your url {} has an invalid scheme, please chose http or https",
-            grpc_url
-        )));
+        return Err(Error::msg(format!("Your url {} has an invalid scheme, please chose http or https", grpc_url)));
     }
     let dst = grpc_url.trim_end_matches('/').to_string();
     let mut endpoint = Endpoint::new(dst)?;
@@ -133,9 +106,7 @@ pub async fn new_grpc_channel(grpc_url: &str) -> Result<Channel> {
 pub async fn get_account_info(grpc_channel: &Channel, address: String) -> Result<BaseAccount> {
     let mut auth_query_client = AuthQueryClient::new(grpc_channel.clone());
 
-    let response = auth_query_client
-        .account(QueryAccountRequest { address })
-        .await?;
+    let response = auth_query_client.account(QueryAccountRequest { address }).await?;
     let account = response.into_inner().account.unwrap();
     let auth_account = unpack_any(account, BaseAccount::default())?;
     Ok(auth_account)
@@ -161,10 +132,7 @@ pub async fn get_gas_price_by_denom(grpc_channel: &Channel, denom: String) -> Re
         Ok(price.unwrap().clone())
     } else {
         // Err(Error::msg("no found gas price by denom"))
-        Ok(Coin {
-            denom,
-            amount: "0".to_string(),
-        })
+        Ok(Coin { denom, amount: "0".to_string() })
     }
 }
 
@@ -181,12 +149,7 @@ pub async fn check_for_fee_denom(grpc_channel: &Channel, account: FxAddress, fee
     let amount = BigInt::from_str(balance.amount.as_str()).unwrap();
     // amount > 1 * 10^18
     if amount.gt(&BigInt::from_str("1000000000000000000").unwrap()) {
-        trace!(
-            "account {}, balance {}{}",
-            account,
-            balance.amount,
-            fee_denom
-        );
+        trace!("account {}, balance {}{}", account, balance.amount, fee_denom);
         return;
     }
     panic!("You have specified that fees should be paid in {} but account {} has no balance of that token!", fee_denom, account);
@@ -194,9 +157,7 @@ pub async fn check_for_fee_denom(grpc_channel: &Channel, account: FxAddress, fee
 
 pub async fn get_latest_block_height(grpc_channel: &Channel) -> Result<u64> {
     let mut tendermint_client = TendermintClient::new(grpc_channel.clone());
-    let result = tendermint_client
-        .get_latest_block(GetLatestBlockRequest {})
-        .await?;
+    let result = tendermint_client.get_latest_block(GetLatestBlockRequest {}).await?;
     let response = result.into_inner();
     if let Some(block) = &response.block {
         if block.header.is_some() {
@@ -210,9 +171,7 @@ pub async fn get_latest_block_height(grpc_channel: &Channel) -> Result<u64> {
 
 pub async fn get_chain_id(grpc_channel: &Channel) -> Result<chain::Id> {
     let mut tendermint_client = TendermintClient::new(grpc_channel.clone());
-    let result = tendermint_client
-        .get_latest_block(GetLatestBlockRequest {})
-        .await?;
+    let result = tendermint_client.get_latest_block(GetLatestBlockRequest {}).await?;
     let response = result.into_inner();
     if let Some(block) = response.clone().block {
         if block.header.is_some() {
@@ -227,31 +186,22 @@ pub async fn get_chain_id(grpc_channel: &Channel) -> Result<chain::Id> {
 pub async fn get_last_event_nonce(grpc_channel: &Channel, fx_address: FxAddress) -> Result<u64> {
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
     let result = gravity_query_client
-        .last_event_nonce_by_addr(QueryLastEventNonceByAddrRequest {
-            address: fx_address.to_string(),
-        })
+        .last_event_nonce_by_addr(QueryLastEventNonceByAddrRequest { address: fx_address.to_string() })
         .await?;
     Ok(result.into_inner().event_nonce)
 }
 
-pub async fn get_last_event_block_height_by_addr(
-    grpc_channel: &Channel,
-    fx_address: FxAddress,
-) -> Result<u64> {
+pub async fn get_last_event_block_height_by_addr(grpc_channel: &Channel, fx_address: FxAddress) -> Result<u64> {
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
     let result = gravity_query_client
-        .last_event_block_height_by_addr(QueryLastEventBlockHeightByAddrRequest {
-            address: fx_address.to_string(),
-        })
+        .last_event_block_height_by_addr(QueryLastEventBlockHeightByAddrRequest { address: fx_address.to_string() })
         .await?;
     Ok(result.into_inner().block_height)
 }
 
 pub async fn get_last_eth_block_height(grpc_channel: &Channel) -> Result<u64> {
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
-    let result = gravity_query_client
-        .last_observed_eth_block_height(QueryLastObservedEthBlockHeightRequest {})
-        .await?;
+    let result = gravity_query_client.last_observed_eth_block_height(QueryLastObservedEthBlockHeightRequest {}).await?;
     Ok(result.into_inner().block_height)
 }
 
@@ -266,11 +216,7 @@ pub async fn get_all_balances(grpc_channel: &Channel, fx_address: FxAddress) -> 
     Ok(result.into_inner().balances)
 }
 
-pub async fn get_balance(
-    grpc_channel: &Channel,
-    fx_address: FxAddress,
-    denom: String,
-) -> Result<Coin> {
+pub async fn get_balance(grpc_channel: &Channel, fx_address: FxAddress, denom: String) -> Result<Coin> {
     let mut bank_query_client = BankQueryClient::new(grpc_channel.clone());
     let result = bank_query_client
         .balance(QueryBalanceRequest {
@@ -311,12 +257,7 @@ mod tests {
         let grpc_channel = new_grpc_channel(FX_GRPC_URL).await.unwrap();
         let auth_account = get_account_info(&grpc_channel, fx_address).await.unwrap();
         let fx_chain_id = get_chain_id(&grpc_channel).await.unwrap();
-        let fx_builder = Builder::new(
-            fx_chain_id,
-            fx_private_key,
-            auth_account.account_number,
-            "FX",
-        );
+        let fx_builder = Builder::new(fx_chain_id, fx_private_key, auth_account.account_number, "FX");
 
         let msg = MsgSetOrchestratorAddress {
             validator: fx_builder.address().to_valoper().unwrap(),
@@ -326,14 +267,9 @@ mod tests {
 
         let message = msg.to_any("/fx.gravity.v1.MsgSetOrchestratorAddress");
 
-        let tx_response = send_tx(&fx_builder, &grpc_channel, vec![message])
-            .await
-            .unwrap();
+        let tx_response = send_tx(&fx_builder, &grpc_channel, vec![message]).await.unwrap();
         // println!("{:#?}", tx_response)
-        println!(
-            "code: {}, info: {}, tx hash: {}",
-            tx_response.code, tx_response.info, tx_response.txhash
-        )
+        println!("code: {}, info: {}, tx hash: {}", tx_response.code, tx_response.info, tx_response.txhash)
     }
 
     #[tokio::test]
@@ -344,10 +280,7 @@ mod tests {
         let auth_account = get_account_info(&grpc_channel, fx_address).await.unwrap();
         assert_eq!(0u64, auth_account.account_number);
         // println!("account info: {:?}", auth_account);
-        println!(
-            "account info: {}, number: {}, sequence: {}",
-            auth_account.address, auth_account.account_number, auth_account.sequence
-        );
+        println!("account info: {}, number: {}, sequence: {}", auth_account.address, auth_account.account_number, auth_account.sequence);
     }
 
     #[tokio::test]
@@ -358,9 +291,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_check_for_fee_denom() {
-        env_logger::builder()
-            .filter_module("fxchain::client", log::LevelFilter::Trace)
-            .init();
+        env_logger::builder().filter_module("fxchain::client", log::LevelFilter::Trace).init();
         let grpc_channel = new_grpc_channel("tcp://127.0.0.1:9090").await.unwrap();
 
         let private_key = PrivateKey::from_phrase(FX_MNEMONIC, "").unwrap();
@@ -371,9 +302,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_chain_id() {
-        let grpc_channel = new_grpc_channel("")
-            .await
-            .unwrap();
+        let grpc_channel = new_grpc_channel("").await.unwrap();
         let chain_id = get_chain_id(&grpc_channel).await.unwrap();
         println!("{}", chain_id);
         assert_eq!(chain_id.to_string(), "fxcore".to_string())
@@ -396,28 +325,10 @@ mod tests {
     #[tokio::test]
     async fn test_get_gas_price_by_denom() {
         let grpc_channel = new_grpc_channel("tcp://127.0.0.1:9090").await.unwrap();
-        let gas_price = get_gas_price_by_denom(&grpc_channel, "FX".to_string())
-            .await
-            .unwrap();
+        let gas_price = get_gas_price_by_denom(&grpc_channel, "FX".to_string()).await.unwrap();
         println!("{}, {}", gas_price.amount, gas_price.denom);
-        println!(
-            "{}",
-            BigInt::from_str(gas_price.amount.as_str())
-                .unwrap()
-                .div(BigInt::from(10).pow(18))
-        );
-        println!(
-            "{}",
-            BigInt::from_str(gas_price.amount.as_str())
-                .unwrap()
-                .to_string()
-        );
-        println!(
-            "{}",
-            BigInt::from_str(gas_price.amount.as_str())
-                .unwrap()
-                .mul(DEFAULT_GAS_LIMIT)
-                .to_string()
-        )
+        println!("{}", BigInt::from_str(gas_price.amount.as_str()).unwrap().div(BigInt::from(10).pow(18)));
+        println!("{}", BigInt::from_str(gas_price.amount.as_str()).unwrap().to_string());
+        println!("{}", BigInt::from_str(gas_price.amount.as_str()).unwrap().mul(DEFAULT_GAS_LIMIT).to_string())
     }
 }

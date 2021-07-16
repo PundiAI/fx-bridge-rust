@@ -12,29 +12,18 @@ use web3::Web3;
 use ethereum::address::Checksum;
 use ethereum::client::get_block_delay;
 use ethereum::fx_bridge;
-use ethereum::fx_bridge::{
-    FxOriginatedTokenEvent, query_all_event_san_block, SendToFxEvent,
-    TransactionBatchExecutedEvent, ValsetUpdatedEvent,
-};
+use ethereum::fx_bridge::{query_all_event_san_block, FxOriginatedTokenEvent, SendToFxEvent, TransactionBatchExecutedEvent, ValsetUpdatedEvent};
 use fxchain::address::Address as FxAddress;
 use fxchain::builder::Builder;
 use fxchain::grpc_client::{get_last_event_block_height_by_addr, get_last_event_nonce};
 use fxchain::proto_ext::MessageExt;
-use fxchain::x::gravity::{
-    BridgeValidator, MsgDepositClaim, MsgFxOriginatedTokenClaim, MsgValsetUpdatedClaim,
-    MsgWithdrawClaim,
-};
+use fxchain::x::gravity::{BridgeValidator, MsgDepositClaim, MsgFxOriginatedTokenClaim, MsgValsetUpdatedClaim, MsgWithdrawClaim};
 use prometheus::metrics;
 
-use crate::{ETH_AVG_BLOCK_TIME, ETH_BLOCKS_TO_SEARCH, ETH_EVENT_TO_SEARCH};
 use crate::singer_loop::set_fx_key_balance_metrics;
+use crate::{ETH_AVG_BLOCK_TIME, ETH_BLOCKS_TO_SEARCH, ETH_EVENT_TO_SEARCH};
 
-pub async fn eth_oracle_bridge_loop(
-    fx_builder: &Builder,
-    grpc_channel: &Channel,
-    web3: &Web3<Http>,
-    bridge_addr: EthAddress,
-) {
+pub async fn eth_oracle_bridge_loop(fx_builder: &Builder, grpc_channel: &Channel, web3: &Web3<Http>, bridge_addr: EthAddress) {
     let mut eth_last_block = U64::from(0);
     let eth_block_delay = get_block_delay(web3).await.unwrap();
 
@@ -42,13 +31,7 @@ pub async fn eth_oracle_bridge_loop(
         sleep(ETH_AVG_BLOCK_TIME).await;
 
         if eth_last_block.is_zero() {
-            let result = get_last_checked_block_height(
-                web3,
-                grpc_channel,
-                fx_builder.address(),
-                bridge_addr,
-                eth_block_delay,
-            ).await;
+            let result = get_last_checked_block_height(web3, grpc_channel, fx_builder.address(), bridge_addr, eth_block_delay).await;
             if result.is_err() {
                 error!("Oracle check last block height failed {:?}", result.unwrap_err());
                 continue;
@@ -75,14 +58,7 @@ pub async fn eth_oracle_bridge_loop(
             eth_latest_block = eth_last_block.add(ETH_EVENT_TO_SEARCH)
         }
 
-        let result = eth_oracle_bridge(
-            fx_builder,
-            grpc_channel,
-            web3,
-            bridge_addr,
-            eth_last_block,
-            eth_latest_block,
-        ).await;
+        let result = eth_oracle_bridge(fx_builder, grpc_channel, web3, bridge_addr, eth_last_block, eth_latest_block).await;
 
         match result {
             Ok(latest_block) => {
@@ -97,14 +73,7 @@ pub async fn eth_oracle_bridge_loop(
 }
 
 #[async_recursion(? Send)]
-async fn eth_oracle_bridge(
-    fx_builder: &Builder,
-    grpc_channel: &Channel,
-    web3: &Web3<Http>,
-    bridge_addr: EthAddress,
-    from_block: U64,
-    mut to_block: U64,
-) -> Result<U64> {
+async fn eth_oracle_bridge(fx_builder: &Builder, grpc_channel: &Channel, web3: &Web3<Http>, bridge_addr: EthAddress, from_block: U64, mut to_block: U64) -> Result<U64> {
     let fx_address = fx_builder.address();
 
     let last_event_nonce = fxchain::grpc_client::get_last_event_nonce(grpc_channel, fx_address).await?;
@@ -126,25 +95,16 @@ async fn eth_oracle_bridge(
 
         let eth_block_buf = (to_block - from_block) / 2;
         if eth_block_buf > 1.into() {
-            return eth_oracle_bridge(
-                fx_builder,
-                grpc_channel,
-                web3,
-                bridge_addr,
-                from_block,
-                from_block + eth_block_buf,
-            ).await;
+            return eth_oracle_bridge(fx_builder, grpc_channel, web3, bridge_addr, from_block, from_block + eth_block_buf).await;
         }
         to_block = from_block;
-        let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) =
-            query_all_event_san_block(web3, bridge_addr, from_block).await?;
+        let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) = query_all_event_san_block(web3, bridge_addr, from_block).await?;
         deposits = deposits_a;
         withdraws = withdraws_a;
         fx_originated_token = fx_originated_token_a;
         valset_updated = valset_updated_a;
     } else {
-        let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) =
-            event_result.unwrap();
+        let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) = event_result.unwrap();
         deposits = deposits_a;
         withdraws = withdraws_a;
         fx_originated_token = fx_originated_token_a;
@@ -226,10 +186,7 @@ async fn eth_oracle_bridge(
         unordered_msgs.insert(valset.event_nonce.clone(), msg);
     }
     if unordered_msgs.len() <= 0 {
-        debug!(
-            "An Oracle event to be processed was not found (eth-fx){}",
-            to_block
-        );
+        debug!("An Oracle event to be processed was not found (eth-fx){}", to_block);
         return Ok(to_block + 1);
     }
 
@@ -239,11 +196,7 @@ async fn eth_oracle_bridge(
     }
     keys.sort();
     metrics::ETH_BRIDGE_ORACLE_MSG_PENDING_LEN.set(unordered_msgs.len() as f64);
-    info!(
-        "Oracle bridge originated token and deposit and withdraw len {}, {:?}",
-        unordered_msgs.len(),
-        keys
-    );
+    info!("Oracle bridge originated token and deposit and withdraw len {}, {:?}", unordered_msgs.len(), keys);
     if keys[0] != (last_event_nonce + 1).into() {
         panic!("Oracle bridge event nonce out of the current state")
     }
@@ -258,12 +211,8 @@ async fn eth_oracle_bridge(
         if (i + 1) % fxchain::FX_MSG_MAX_NUMBER != 0 && (i + 1) != msgs.len() {
             continue;
         }
-        let tx_resp =
-            fxchain::grpc_client::send_tx(fx_builder, grpc_channel, cur_msg.clone()).await?;
-        info!(
-            "Eth oracle bridge fx tx response code {}, tx hash {}",
-            tx_resp.code, tx_resp.txhash
-        );
+        let tx_resp = fxchain::grpc_client::send_tx(fx_builder, grpc_channel, cur_msg.clone()).await?;
+        info!("Eth oracle bridge fx tx response code {}, tx hash {}", tx_resp.code, tx_resp.txhash);
         if tx_resp.code != 0 {
             error!("Send eth oracle bridge tx failed: {:?}", tx_resp.raw_log);
             return Ok(from_block);
@@ -276,13 +225,7 @@ async fn eth_oracle_bridge(
     Ok(to_block + 1)
 }
 
-async fn get_last_checked_block_height(
-    web3: &Web3<Http>,
-    grpc_channel: &Channel,
-    fx_address: FxAddress,
-    bridge_addr: EthAddress,
-    eth_block_delay: U64,
-) -> Result<U64> {
+async fn get_last_checked_block_height(web3: &Web3<Http>, grpc_channel: &Channel, fx_address: FxAddress, bridge_addr: EthAddress, eth_block_delay: U64) -> Result<U64> {
     let mut last_event_nonce: U256 = get_last_event_nonce(grpc_channel, fx_address).await?.into();
 
     if last_event_nonce == 0u8.into() {
@@ -317,10 +260,7 @@ async fn get_last_checked_block_height(
             last_event_nonce, end_search, current_block
         );
 
-
-        let (deposits, withdraws, fx_originated_token, valset_updated) =
-            fx_bridge::query_all_event(web3, bridge_addr.clone(), end_search, Some(current_block))
-                .await?;
+        let (deposits, withdraws, fx_originated_token, valset_updated) = fx_bridge::query_all_event(web3, bridge_addr.clone(), end_search, Some(current_block)).await?;
 
         for event in deposits {
             if event.event_nonce == last_event_nonce {
@@ -338,13 +278,13 @@ async fn get_last_checked_block_height(
             }
         }
         for event in valset_updated {
-            if event.valset_nonce == 0u8.into()
-                && event.event_nonce == last_event_nonce
-                && last_event_nonce == 1u8.into()
-            {
+            if event.valset_nonce == 0u8.into() && event.event_nonce == last_event_nonce && last_event_nonce == 1u8.into() {
                 return Ok(event.block_number);
             } else if event.valset_nonce == 0u8.into() && last_event_nonce > 1u8.into() {
-                panic!("Could not find the last event relayed by {}, Last Event nonce is {} but no event matching that could be found!", fx_address, last_event_nonce)
+                panic!(
+                    "Could not find the last event relayed by {}, Last Event nonce is {} but no event matching that could be found!",
+                    fx_address, last_event_nonce
+                )
             }
         }
 
@@ -404,50 +344,29 @@ mod tests {
     }
 
     #[async_recursion(? Send)]
-    async fn test_eth_bridge_event(
-        web3: &Web3<Http>,
-        bridge_addr: EthAddress,
-        from_block: U64,
-        mut to_block: U64,
-    ) -> Result<U64> {
+    async fn test_eth_bridge_event(web3: &Web3<Http>, bridge_addr: EthAddress, from_block: U64, mut to_block: U64) -> Result<U64> {
         let deposits: Vec<SendToFxEvent>;
         let withdraws: Vec<TransactionBatchExecutedEvent>;
         let fx_originated_token: Vec<FxOriginatedTokenEvent>;
         let valset_updated: Vec<ValsetUpdatedEvent>;
 
-        let event_result =
-            fx_bridge::query_all_event(web3, bridge_addr, from_block, Some(to_block)).await;
+        let event_result = fx_bridge::query_all_event(web3, bridge_addr, from_block, Some(to_block)).await;
         if event_result.is_err() {
-            error!(
-                "Eth bridge oracle query all event error: {:?}",
-                event_result
-            );
+            error!("Eth bridge oracle query all event error: {:?}", event_result);
             let eth_block_buf = (to_block - from_block) / 2;
             if eth_block_buf > 1.into() {
-                trace!(
-                    "recursion {:?},{:?}",
-                    from_block,
-                    from_block + eth_block_buf
-                );
-                return test_eth_bridge_event(
-                    web3,
-                    bridge_addr,
-                    from_block,
-                    from_block + eth_block_buf,
-                )
-                    .await;
+                trace!("recursion {:?},{:?}", from_block, from_block + eth_block_buf);
+                return test_eth_bridge_event(web3, bridge_addr, from_block, from_block + eth_block_buf).await;
             }
             trace!("san block: {:?}", to_block);
             to_block = from_block;
-            let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) =
-                query_all_event_san_block(web3, bridge_addr, from_block).await?;
+            let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) = query_all_event_san_block(web3, bridge_addr, from_block).await?;
             deposits = deposits_a;
             withdraws = withdraws_a;
             fx_originated_token = fx_originated_token_a;
             valset_updated = valset_updated_a;
         } else {
-            let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) =
-                event_result.unwrap();
+            let (deposits_a, withdraws_a, fx_originated_token_a, valset_updated_a) = event_result.unwrap();
             deposits = deposits_a;
             withdraws = withdraws_a;
             fx_originated_token = fx_originated_token_a;
@@ -478,11 +397,9 @@ mod tests {
     async fn test_test_eth_bridge_event() {
         env_logger::builder().filter_module("bridge::oracle_loop", Trace).init();
 
-        let transport = web3::transports::Http::new(ETH_RPC_URL)
-            .unwrap();
+        let transport = web3::transports::Http::new(ETH_RPC_URL).unwrap();
         let web3 = web3::Web3::new(transport);
-        let bridge_addr =
-            EthAddress::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
+        let bridge_addr = EthAddress::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
         let res = test_eth_bridge_event(&web3, bridge_addr, 25250829.into(), 25250830.into()).await;
         println!("{:?}", res);
     }

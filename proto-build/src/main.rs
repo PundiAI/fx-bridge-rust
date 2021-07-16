@@ -28,13 +28,7 @@ fn main() {
             let temp_dir = std::env::temp_dir();
             let sdk_dir = temp_dir.join(PathBuf::from("cosmos-sdk"));
             info!("git temp dir by cosmos sdk '{}'", sdk_dir.display());
-            run_git(&[
-                "clone",
-                "--depth",
-                "1",
-                "https://github.com/cosmos/cosmos-sdk.git",
-                format!("{}", sdk_dir.display()).as_str(),
-            ]);
+            run_git(&["clone", "--depth", "1", "https://github.com/cosmos/cosmos-sdk.git", format!("{}", sdk_dir.display()).as_str()]);
             sdk_dir
         }
     };
@@ -44,16 +38,11 @@ fn main() {
         PathBuf::from(format!("{}/third_party/proto", sdk_dir.display())),
     ];
 
-    let out_path = PathBuf::from(format!(
-        "{}/fxchain/src/prost/",
-        root.parent().unwrap().display()
-    ));
+    let out_path = PathBuf::from(format!("{}/fxchain/src/prost/", root.parent().unwrap().display()));
 
     compile_protos(&proto_paths, &proto_include_paths, &out_path);
 
-    let exclude_files = &[
-        PathBuf::from("fx.gravity.v1.rs"),
-    ];
+    let exclude_files = &[PathBuf::from("fx.gravity.v1.rs")];
     remove_file_exclude(&out_path, exclude_files);
 }
 
@@ -61,10 +50,7 @@ fn main() {
 // we need to have an include which is just the folder of our protos to satisfy protoc
 // which insists that any passed file be included in a directory passed as an include
 fn compile_protos(proto_paths: &[PathBuf], proto_include_paths: &[PathBuf], out_dir: &Path) {
-    info!(
-        "Compiling .proto files to Rust into '{}'...",
-        out_dir.display()
-    );
+    info!("Compiling .proto files to Rust into '{}'...", out_dir.display());
 
     // List available proto files
     let mut protos: Vec<PathBuf> = vec![];
@@ -73,11 +59,7 @@ fn compile_protos(proto_paths: &[PathBuf], proto_include_paths: &[PathBuf], out_
             &mut WalkDir::new(proto_path)
                 .into_iter()
                 .filter_map(|e| e.ok())
-                .filter(|e| {
-                    e.file_type().is_file()
-                        && e.path().extension().is_some()
-                        && e.path().extension().unwrap() == "proto"
-                })
+                .filter(|e| e.file_type().is_file() && e.path().extension().is_some() && e.path().extension().unwrap() == "proto")
                 .map(|e| e.into_path())
                 .collect(),
         );
@@ -86,10 +68,7 @@ fn compile_protos(proto_paths: &[PathBuf], proto_include_paths: &[PathBuf], out_
     // Compile all proto files
     let mut config = prost_build::Config::default();
     config.out_dir(out_dir);
-    config
-        .compile_well_known_types()
-        .compile_protos(&protos, &proto_include_paths)
-        .unwrap();
+    config.compile_well_known_types().compile_protos(&protos, &proto_include_paths).unwrap();
 
     info!("Compiling proto clients for GRPC services!");
     tonic_build::configure()
@@ -126,11 +105,7 @@ fn remove_file_exclude(work_dir: &Path, exclude_files: &[PathBuf]) {
 
 fn run_git(args: impl IntoIterator<Item = impl AsRef<OsStr>>) {
     let stdout = process::Stdio::inherit();
-    let exit_status = process::Command::new("git")
-        .args(args)
-        .stdout(stdout)
-        .status()
-        .expect("git exit status missing");
+    let exit_status = process::Command::new("git").args(args).stdout(stdout).status().expect("git exit status missing");
 
     if !exit_status.success() {
         panic!("git exited with error code: {:?}", exit_status.code());

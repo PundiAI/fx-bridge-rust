@@ -134,7 +134,7 @@ async fn main() {
             let web3 = web3::Web3::new(transport);
 
             let ethereum_key_batch_str = cmd.ethereum_batch_key.as_str();
-            let eth_private_key_batch =  EthPrivateKey::from_str(ethereum_key_batch_str).unwrap();
+            let eth_private_key_batch = EthPrivateKey::from_str(ethereum_key_batch_str).unwrap();
             info!("Send ethereum batch tx account address {}", eth_private_key_batch.address().to_hex_string());
 
             let ethereum_key_valset_str = cmd.ethereum_valset_key.as_str();
@@ -147,13 +147,7 @@ async fn main() {
 
             with_sync_block(&grpc_channel, &web3).await;
 
-            let future1 = relayer_main_loop(
-                &grpc_channel,
-                &web3,
-                bridge_addr,
-                &eth_private_key_valset,
-                &eth_private_key_batch,
-            );
+            let future1 = relayer_main_loop(&grpc_channel, &web3, bridge_addr, &eth_private_key_valset, &eth_private_key_batch);
             let future2 = prometheus::start(9898);
             future::join(future1, future2).await;
         }
@@ -165,16 +159,11 @@ pub async fn with_sync_block(grpc_channel: &Channel, web3: &Web3<Http>) {
     loop {
         let eth_latest_block_number = web3.eth().block_number().await;
 
-        let fx_latest_block_height =
-            fxchain::grpc_client::get_latest_block_height(grpc_channel).await;
+        let fx_latest_block_height = fxchain::grpc_client::get_latest_block_height(grpc_channel).await;
 
         match (eth_latest_block_number, fx_latest_block_height) {
             (Ok(eth_latest_block_number), Ok(fx_latest_block_height)) => {
-                trace!(
-                    "Latest Eth block {} Latest FxChain block {}",
-                    eth_latest_block_number,
-                    fx_latest_block_height,
-                );
+                trace!("Latest Eth block {} Latest FxChain block {}", eth_latest_block_number, fx_latest_block_height,);
                 return;
             }
             (Ok(_), Err(_)) => {
@@ -195,4 +184,3 @@ pub async fn with_sync_block(grpc_channel: &Channel, web3: &Web3<Http>) {
         }
     }
 }
-

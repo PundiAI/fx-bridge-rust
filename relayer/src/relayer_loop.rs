@@ -14,13 +14,7 @@ use crate::find_latest_valset::find_latest_valset;
 use crate::valset_relaying::relay_valsets;
 use crate::RELAYER_LOOP_TIME;
 
-pub async fn relayer_main_loop(
-    grpc_channel: &Channel,
-    web3: &Web3<Http>,
-    bridge_addr: EthAddress,
-    eth_private_key_valset: &EthPrivateKey,
-    eth_private_key_batch: &EthPrivateKey,
-) {
+pub async fn relayer_main_loop(grpc_channel: &Channel, web3: &Web3<Http>, bridge_addr: EthAddress, eth_private_key_valset: &EthPrivateKey, eth_private_key_batch: &EthPrivateKey) {
     let mut gravity_query_client = GravityQueryClient::new(grpc_channel.clone());
     let response = gravity_query_client.params(QueryParamsRequest {}).await.unwrap();
     let gravity_id = response.into_inner().params.unwrap().gravity_id;
@@ -40,25 +34,9 @@ pub async fn relayer_main_loop(
         let result = find_latest_valset(grpc_channel, web3, bridge_addr).await;
         match result {
             Ok(current_valset) => {
-                relay_valsets(
-                    current_valset.clone(),
-                    eth_private_key_valset,
-                    &web3,
-                    &grpc_channel,
-                    bridge_addr,
-                    &gravity_id,
-                )
-                .await;
+                relay_valsets(current_valset.clone(), eth_private_key_valset, &web3, &grpc_channel, bridge_addr, &gravity_id).await;
 
-                relay_batches(
-                    current_valset,
-                    eth_private_key_batch,
-                    &grpc_channel,
-                    &web3,
-                    bridge_addr,
-                    &gravity_id,
-                )
-                .await;
+                relay_batches(current_valset, eth_private_key_batch, &grpc_channel, &web3, bridge_addr, &gravity_id).await;
             }
             Err(report) => error!("The query for current valset failed {:?}", report),
         }
