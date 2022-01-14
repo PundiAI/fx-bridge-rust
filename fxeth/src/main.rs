@@ -22,7 +22,7 @@ use fxchain::builder::Builder;
 use fxchain::grpc_client::new_grpc_channel;
 use fxchain::private_key::PrivateKey as FxPrivateKey;
 
-/// F(x)Core and Ethereum asset transfers
+/// f(x)Core and Ethereum asset transfers
 #[derive(Parser, Debug)]
 #[clap(author, version)]
 struct Opts {
@@ -38,35 +38,35 @@ struct Opts {
 
 #[derive(Parser, Debug)]
 pub enum SubCmd {
-    ///responsible for event on signature the F(x) Chain and the Ethereum
+    ///responsible for event on signature the f(x)Core and the Ethereum
     #[clap(name = "bridge")]
     BridgeCmd(Bridge),
 }
 
 #[derive(Parser, Debug)]
 pub struct Bridge {
-    /// F(x) Chain validator private key
+    /// f(x)Core validator private key
     #[clap(long)]
     fx_chain_key: String,
-    /// F(x) Chain validator private key password
+    /// f(x)Core validator private key password
     #[clap(long, default_value = "/root/fx.password")]
     fx_chain_pwd: String,
-    /// F(x) Chain gRPC address
+    /// f(x)Core gRPC address
     #[clap(long, default_value = "http://127.0.0.1:9090")]
     fx_chain_grpc: String,
-    /// F(x) Chain validator Ethereum private key
+    /// f(x)Core validator Ethereum private key
     #[clap(long)]
     ethereum_key: String,
-    /// F(x) Chain validator Ethereum private key password
+    /// f(x)Core validator Ethereum private key password
     #[clap(long, default_value = "/root/eth.password")]
     ethereum_pwd: String,
     /// Ethereum RPC address
     #[clap(long, default_value = "http://127.0.0.1:9090")]
     ethereum_rpc: String,
-    /// F(x) Chain Bridge contract address
+    /// f(x)Core Bridge contract address
     #[clap(long)]
     bridge_addr: String,
-    /// F(x) Chain send transactions fee
+    /// f(x)Core send transactions fee
     #[clap(long, default_value = "FX")]
     fees: String,
     /// Ethereum start block number
