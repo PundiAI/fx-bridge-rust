@@ -26,7 +26,7 @@ impl<M: Message> MessageExt for M {
 }
 
 pub fn unpack_any<T: Message>(any: Any, mut target: T) -> Result<T, DecodeError> {
-    trace!("Unpack any type url '{}'", any.type_url);
+    debug!("Unpack any type url '{}'", any.type_url);
     let instance = target.merge(any.value.as_slice()).map(|_| target)?;
     Ok(instance)
 }

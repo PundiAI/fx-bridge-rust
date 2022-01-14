@@ -383,29 +383,17 @@ pub mod msg_client {
     use tonic::codegen::*;
 
     #[doc = " Msg defines the state transitions possible within gravity"]
-    pub struct MsgClient<T> {
-        inner: tonic::client::Grpc<T>,
-    }
+    pub struct MsgClient<T> { inner: tonic::client::Grpc<T> }
 
     impl MsgClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
-        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
-        where
-            D: std::convert::TryInto<tonic::transport::Endpoint>,
-            D::Error: Into<StdError>,
-        {
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error> where D: std::convert::TryInto<tonic::transport::Endpoint>, D::Error: Into<StdError>, {
             let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
 
-    impl<T> MsgClient<T>
-    where
-        T: tonic::client::GrpcService<tonic::body::BoxBody>,
-        T::ResponseBody: Body + HttpBody + Send + 'static,
-        T::Error: Into<StdError>,
-        <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
-    {
+    impl<T> MsgClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + HttpBody + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send, {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
             Self { inner }
@@ -414,225 +402,131 @@ pub mod msg_client {
             let inner = tonic::client::Grpc::with_interceptor(inner, interceptor);
             Self { inner }
         }
-        pub async fn valset_confirm(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgValsetConfirm>,
-        ) -> Result<tonic::Response<super::MsgValsetConfirmResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn valset_confirm(&mut self, request: impl tonic::IntoRequest<super::MsgValsetConfirm>) -> Result<tonic::Response<super::MsgValsetConfirmResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/ValsetConfirm");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn send_to_eth(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgSendToEth>,
-        ) -> Result<tonic::Response<super::MsgSendToEthResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn send_to_eth(&mut self, request: impl tonic::IntoRequest<super::MsgSendToEth>) -> Result<tonic::Response<super::MsgSendToEthResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/SendToEth");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn request_batch(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgRequestBatch>,
-        ) -> Result<tonic::Response<super::MsgRequestBatchResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn request_batch(&mut self, request: impl tonic::IntoRequest<super::MsgRequestBatch>) -> Result<tonic::Response<super::MsgRequestBatchResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/RequestBatch");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn confirm_batch(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgConfirmBatch>,
-        ) -> Result<tonic::Response<super::MsgConfirmBatchResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn confirm_batch(&mut self, request: impl tonic::IntoRequest<super::MsgConfirmBatch>) -> Result<tonic::Response<super::MsgConfirmBatchResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/ConfirmBatch");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn deposit_claim(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgDepositClaim>,
-        ) -> Result<tonic::Response<super::MsgDepositClaimResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn deposit_claim(&mut self, request: impl tonic::IntoRequest<super::MsgDepositClaim>) -> Result<tonic::Response<super::MsgDepositClaimResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/DepositClaim");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn withdraw_claim(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgWithdrawClaim>,
-        ) -> Result<tonic::Response<super::MsgWithdrawClaimResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn withdraw_claim(&mut self, request: impl tonic::IntoRequest<super::MsgWithdrawClaim>) -> Result<tonic::Response<super::MsgWithdrawClaimResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/WithdrawClaim");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn valset_update_claim(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgValsetUpdatedClaim>,
-        ) -> Result<tonic::Response<super::MsgValsetUpdatedClaimResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn valset_update_claim(&mut self, request: impl tonic::IntoRequest<super::MsgValsetUpdatedClaim>) -> Result<tonic::Response<super::MsgValsetUpdatedClaimResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/ValsetUpdateClaim");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn set_orchestrator_address(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgSetOrchestratorAddress>,
-        ) -> Result<tonic::Response<super::MsgSetOrchestratorAddressResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn set_orchestrator_address(&mut self, request: impl tonic::IntoRequest<super::MsgSetOrchestratorAddress>) -> Result<tonic::Response<super::MsgSetOrchestratorAddressResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/SetOrchestratorAddress");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/SetOrchestratorAddress");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn cancel_send_to_eth(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgCancelSendToEth>,
-        ) -> Result<tonic::Response<super::MsgCancelSendToEthResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn cancel_send_to_eth(&mut self, request: impl tonic::IntoRequest<super::MsgCancelSendToEth>) -> Result<tonic::Response<super::MsgCancelSendToEthResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/CancelSendToEth");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn fx_originated_token_claim(
-            &mut self,
-            request: impl tonic::IntoRequest<super::MsgFxOriginatedTokenClaim>,
-        ) -> Result<tonic::Response<super::MsgFxOriginatedTokenClaimResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn fx_originated_token_claim(&mut self, request: impl tonic::IntoRequest<super::MsgFxOriginatedTokenClaim>) -> Result<tonic::Response<super::MsgFxOriginatedTokenClaimResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/FxOriginatedTokenClaim");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Msg/FxOriginatedTokenClaim");
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
 
-    impl<T: Clone> Clone for MsgClient<T> {
-        fn clone(&self) -> Self {
-            Self {
-                inner: self.inner.clone(),
-            }
-        }
-    }
+    impl<T: Clone> Clone for MsgClient<T> { fn clone(&self) -> Self { Self { inner: self.inner.clone() } } }
 
-    impl<T> std::fmt::Debug for MsgClient<T> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "MsgClient {{ ... }}")
-        }
-    }
-} // Params represent the Gravity genesis and store parameters
-  // gravity_id:
-  // a random 32 byte value to prevent signature reuse, for example if the
-  // cosmos validators decided to use the same Ethereum keys for another chain
-  // also running Gravity we would not want it to be possible to play a deposit
-  // from chain A back on chain B's Gravity. This value IS USED ON ETHEREUM so
-  // it must be set in your genesis.json before launch and not changed after
-  // deploying Gravity
-  //
-  // contract_hash:
-  // the code hash of a known good version of the Gravity contract
-  // solidity code. This can be used to verify the correct version
-  // of the contract has been deployed. This is a reference value for
-  // goernance action only it is never read by any Gravity code
-  //
-  // bridge_eth_address:
-  // is address of the bridge contract on the Ethereum side, this is a
-  // reference value for governance only and is not actually used by any
-  // Gravity code
-  //
-  // bridge_chain_id:
-  // the unique identifier of the Ethereum chain, this is a reference value
-  // only and is not actually used by any Gravity code
-  //
-  // These reference values may be used by future Gravity client implemetnations
-  // to allow for saftey features or convenience features like the Gravity address
-  // in your relayer. A relayer would require a configured Gravity address if
-  // governance had not set the address on the chain it was relaying for.
-  //
-  // signed_valsets_window
-  // signed_batches_window
-  // signed_claims_window
-  //
-  // These values represent the time in blocks that a validator has to submit
-  // a signature for a batch or valset, or to submit a claim for a particular
-  // attestation nonce. In the case of attestations this clock starts when the
-  // attestation is created, but only allows for slashing once the event has passed
-  //
-  // target_batch_timeout:
-  //
-  // This is the 'target' value for when batches time out, this is a target becuase
-  // Ethereum is a probabalistic chain and you can't say for sure what the block
-  // frequency is ahead of time.
-  //
-  // average_block_time
-  // average_eth_block_time
-  //
-  // These values are the average Cosmos block time and Ethereum block time repsectively
-  // and they are used to copute what the target batch timeout is. It is important that
-  // governance updates these in case of any major, prolonged change in the time it takes
-  // to produce a block
-  //
-  // slash_fraction_valset
-  // slash_fraction_batch
-  // slash_fraction_claim
-  // slash_fraction_conflicting_claim
-  //
-  // The slashing fractions for the various gravity related slashing conditions. The first three
-  // refer to not submitting a particular message, the third for submitting a different claim
-  // for the same Ethereum event
+    impl<T> std::fmt::Debug for MsgClient<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "MsgClient {{ ... }}") } }
+}// Params represent the Gravity genesis and store parameters
+// gravity_id:
+// a random 32 byte value to prevent signature reuse, for example if the
+// cosmos validators decided to use the same Ethereum keys for another chain
+// also running Gravity we would not want it to be possible to play a deposit
+// from chain A back on chain B's Gravity. This value IS USED ON ETHEREUM so
+// it must be set in your genesis.json before launch and not changed after
+// deploying Gravity
+//
+// contract_hash:
+// the code hash of a known good version of the Gravity contract
+// solidity code. This can be used to verify the correct version
+// of the contract has been deployed. This is a reference value for
+// goernance action only it is never read by any Gravity code
+//
+// bridge_eth_address:
+// is address of the bridge contract on the Ethereum side, this is a
+// reference value for governance only and is not actually used by any
+// Gravity code
+//
+// bridge_chain_id:
+// the unique identifier of the Ethereum chain, this is a reference value
+// only and is not actually used by any Gravity code
+//
+// These reference values may be used by future Gravity client implemetnations
+// to allow for saftey features or convenience features like the Gravity address
+// in your relayer. A relayer would require a configured Gravity address if
+// governance had not set the address on the chain it was relaying for.
+//
+// signed_valsets_window
+// signed_batches_window
+// signed_claims_window
+//
+// These values represent the time in blocks that a validator has to submit
+// a signature for a batch or valset, or to submit a claim for a particular
+// attestation nonce. In the case of attestations this clock starts when the
+// attestation is created, but only allows for slashing once the event has passed
+//
+// target_batch_timeout:
+//
+// This is the 'target' value for when batches time out, this is a target becuase
+// Ethereum is a probabalistic chain and you can't say for sure what the block
+// frequency is ahead of time.
+//
+// average_block_time
+// average_eth_block_time
+//
+// These values are the average Cosmos block time and Ethereum block time repsectively
+// and they are used to copute what the target batch timeout is. It is important that
+// governance updates these in case of any major, prolonged change in the time it takes
+// to produce a block
+//
+// slash_fraction_valset
+// slash_fraction_batch
+// slash_fraction_claim
+// slash_fraction_conflicting_claim
+//
+// The slashing fractions for the various gravity related slashing conditions. The first three
+// refer to not submitting a particular message, the third for submitting a different claim
+// for the same Ethereum event
 
 /// valset_update_power_change_percent
 ///
@@ -824,6 +718,22 @@ pub struct QueryBatchRequestByNonceResponse {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QueryBatchConfirmRequest {
+    #[prost(uint64, tag = "1")]
+    pub nonce: u64,
+    #[prost(string, tag = "2")]
+    pub contract_address: std::string::String,
+    #[prost(string, tag = "3")]
+    pub address: std::string::String,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QueryBatchConfirmResponse {
+    #[prost(message, optional, tag = "1")]
+    pub confirm: ::std::option::Option<MsgConfirmBatch>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryBatchConfirmsRequest {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
@@ -878,13 +788,13 @@ pub struct QueryDenomToErc20Response {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByValidatorAddress {
+pub struct QueryDelegateKeyByValidatorRequest {
     #[prost(string, tag = "1")]
     pub validator_address: std::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByValidatorAddressResponse {
+pub struct QueryDelegateKeyByValidatorResponse {
     #[prost(string, tag = "1")]
     pub eth_address: std::string::String,
     #[prost(string, tag = "2")]
@@ -892,13 +802,13 @@ pub struct QueryDelegateKeysByValidatorAddressResponse {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByEthAddress {
+pub struct QueryDelegateKeyByEthRequest {
     #[prost(string, tag = "1")]
     pub eth_address: std::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByEthAddressResponse {
+pub struct QueryDelegateKeyByEthResponse {
     #[prost(string, tag = "1")]
     pub validator_address: std::string::String,
     #[prost(string, tag = "2")]
@@ -906,13 +816,13 @@ pub struct QueryDelegateKeysByEthAddressResponse {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByOrchestratorAddress {
+pub struct QueryDelegateKeyByOrchestratorRequest {
     #[prost(string, tag = "1")]
     pub orchestrator_address: std::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryDelegateKeysByOrchestratorAddressResponse {
+pub struct QueryDelegateKeyByOrchestratorResponse {
     #[prost(string, tag = "1")]
     pub validator_address: std::string::String,
     #[prost(string, tag = "2")]
@@ -920,7 +830,7 @@ pub struct QueryDelegateKeysByOrchestratorAddressResponse {
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryPendingSendToEth {
+pub struct QueryPendingSendToEthRequest {
     #[prost(string, tag = "1")]
     pub sender_address: std::string::String,
 }
@@ -979,29 +889,17 @@ pub mod query_client {
     use tonic::codegen::*;
 
     #[doc = " Query defines the gRPC querier service"]
-    pub struct QueryClient<T> {
-        inner: tonic::client::Grpc<T>,
-    }
+    pub struct QueryClient<T> { inner: tonic::client::Grpc<T> }
 
     impl QueryClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
-        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
-        where
-            D: std::convert::TryInto<tonic::transport::Endpoint>,
-            D::Error: Into<StdError>,
-        {
+        pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error> where D: std::convert::TryInto<tonic::transport::Endpoint>, D::Error: Into<StdError>, {
             let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
 
-    impl<T> QueryClient<T>
-    where
-        T: tonic::client::GrpcService<tonic::body::BoxBody>,
-        T::ResponseBody: Body + HttpBody + Send + 'static,
-        T::Error: Into<StdError>,
-        <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
-    {
+    impl<T> QueryClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + HttpBody + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send, {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
             Self { inner }
@@ -1011,367 +909,149 @@ pub mod query_client {
             Self { inner }
         }
         #[doc = " Deployments queries deployments"]
-        pub async fn params(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryParamsRequest>,
-        ) -> Result<tonic::Response<super::QueryParamsResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn params(&mut self, request: impl tonic::IntoRequest<super::QueryParamsRequest>) -> Result<tonic::Response<super::QueryParamsResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/Params");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn current_valset(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryCurrentValsetRequest>,
-        ) -> Result<tonic::Response<super::QueryCurrentValsetResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn current_valset(&mut self, request: impl tonic::IntoRequest<super::QueryCurrentValsetRequest>) -> Result<tonic::Response<super::QueryCurrentValsetResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/CurrentValset");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn valset_request(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryValsetRequestRequest>,
-        ) -> Result<tonic::Response<super::QueryValsetRequestResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn valset_request(&mut self, request: impl tonic::IntoRequest<super::QueryValsetRequestRequest>) -> Result<tonic::Response<super::QueryValsetRequestResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/ValsetRequest");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn valset_confirm(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryValsetConfirmRequest>,
-        ) -> Result<tonic::Response<super::QueryValsetConfirmResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn valset_confirm(&mut self, request: impl tonic::IntoRequest<super::QueryValsetConfirmRequest>) -> Result<tonic::Response<super::QueryValsetConfirmResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/ValsetConfirm");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn valset_confirms_by_nonce(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryValsetConfirmsByNonceRequest>,
-        ) -> Result<tonic::Response<super::QueryValsetConfirmsByNonceResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn valset_confirms_by_nonce(&mut self, request: impl tonic::IntoRequest<super::QueryValsetConfirmsByNonceRequest>) -> Result<tonic::Response<super::QueryValsetConfirmsByNonceResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/ValsetConfirmsByNonce");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/ValsetConfirmsByNonce");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_valset_requests(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastValsetRequestsRequest>,
-        ) -> Result<tonic::Response<super::QueryLastValsetRequestsResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_valset_requests(&mut self, request: impl tonic::IntoRequest<super::QueryLastValsetRequestsRequest>) -> Result<tonic::Response<super::QueryLastValsetRequestsResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastValsetRequests");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastValsetRequests");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_pending_valset_request_by_addr(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastPendingValsetRequestByAddrRequest>,
-        ) -> Result<
-            tonic::Response<super::QueryLastPendingValsetRequestByAddrResponse>,
-            tonic::Status,
-        > {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_pending_valset_request_by_addr(&mut self, request: impl tonic::IntoRequest<super::QueryLastPendingValsetRequestByAddrRequest>) -> Result<tonic::Response<super::QueryLastPendingValsetRequestByAddrResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/LastPendingValsetRequestByAddr",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastPendingValsetRequestByAddr");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_pending_batch_request_by_addr(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastPendingBatchRequestByAddrRequest>,
-        ) -> Result<tonic::Response<super::QueryLastPendingBatchRequestByAddrResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_pending_batch_request_by_addr(&mut self, request: impl tonic::IntoRequest<super::QueryLastPendingBatchRequestByAddrRequest>) -> Result<tonic::Response<super::QueryLastPendingBatchRequestByAddrResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/LastPendingBatchRequestByAddr",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastPendingBatchRequestByAddr");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_event_nonce_by_addr(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastEventNonceByAddrRequest>,
-        ) -> Result<tonic::Response<super::QueryLastEventNonceByAddrResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_event_nonce_by_addr(&mut self, request: impl tonic::IntoRequest<super::QueryLastEventNonceByAddrRequest>) -> Result<tonic::Response<super::QueryLastEventNonceByAddrResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastEventNonceByAddr");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastEventNonceByAddr");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_event_block_height_by_addr(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastEventBlockHeightByAddrRequest>,
-        ) -> Result<tonic::Response<super::QueryLastEventBlockHeightByAddrResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_event_block_height_by_addr(&mut self, request: impl tonic::IntoRequest<super::QueryLastEventBlockHeightByAddrRequest>) -> Result<tonic::Response<super::QueryLastEventBlockHeightByAddrResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/LastEventBlockHeightByAddr",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastEventBlockHeightByAddr");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn batch_fees(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryBatchFeeRequest>,
-        ) -> Result<tonic::Response<super::QueryBatchFeeResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn batch_fees(&mut self, request: impl tonic::IntoRequest<super::QueryBatchFeeRequest>) -> Result<tonic::Response<super::QueryBatchFeeResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/BatchFees");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn last_observed_eth_block_height(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryLastObservedEthBlockHeightRequest>,
-        ) -> Result<tonic::Response<super::QueryLastObservedEthBlockHeightResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn last_observed_eth_block_height(&mut self, request: impl tonic::IntoRequest<super::QueryLastObservedEthBlockHeightRequest>) -> Result<tonic::Response<super::QueryLastObservedEthBlockHeightResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/LastObservedEthBlockHeight",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/LastObservedEthBlockHeight");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn outgoing_tx_batches(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryOutgoingTxBatchesRequest>,
-        ) -> Result<tonic::Response<super::QueryOutgoingTxBatchesResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn outgoing_tx_batches(&mut self, request: impl tonic::IntoRequest<super::QueryOutgoingTxBatchesRequest>) -> Result<tonic::Response<super::QueryOutgoingTxBatchesResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/OutgoingTxBatches");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/OutgoingTxBatches");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn batch_request_by_nonce(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryBatchRequestByNonceRequest>,
-        ) -> Result<tonic::Response<super::QueryBatchRequestByNonceResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn batch_request_by_nonce(&mut self, request: impl tonic::IntoRequest<super::QueryBatchRequestByNonceRequest>) -> Result<tonic::Response<super::QueryBatchRequestByNonceResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/BatchRequestByNonce");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/BatchRequestByNonce");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn batch_confirms(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryBatchConfirmsRequest>,
-        ) -> Result<tonic::Response<super::QueryBatchConfirmsResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn batch_confirm(&mut self, request: impl tonic::IntoRequest<super::QueryBatchConfirmRequest>) -> Result<tonic::Response<super::QueryBatchConfirmResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/BatchConfirm");
+            self.inner.unary(request.into_request(), path, codec).await
+        }
+        pub async fn batch_confirms(&mut self, request: impl tonic::IntoRequest<super::QueryBatchConfirmsRequest>) -> Result<tonic::Response<super::QueryBatchConfirmsResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/BatchConfirms");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn erc20_to_denom(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryErc20ToDenomRequest>,
-        ) -> Result<tonic::Response<super::QueryErc20ToDenomResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn erc20_to_denom(&mut self, request: impl tonic::IntoRequest<super::QueryErc20ToDenomRequest>) -> Result<tonic::Response<super::QueryErc20ToDenomResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/ERC20ToDenom");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn denom_to_erc20(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryDenomToErc20Request>,
-        ) -> Result<tonic::Response<super::QueryDenomToErc20Response>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn denom_to_erc20(&mut self, request: impl tonic::IntoRequest<super::QueryDenomToErc20Request>) -> Result<tonic::Response<super::QueryDenomToErc20Response>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/DenomToERC20");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn get_delegate_key_by_validator(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryDelegateKeysByValidatorAddress>,
-        ) -> Result<
-            tonic::Response<super::QueryDelegateKeysByValidatorAddressResponse>,
-            tonic::Status,
-        > {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn get_delegate_key_by_validator(&mut self, request: impl tonic::IntoRequest<super::QueryDelegateKeyByValidatorRequest>) -> Result<tonic::Response<super::QueryDelegateKeyByValidatorResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/GetDelegateKeyByValidator",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetDelegateKeyByValidator");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn get_delegate_key_by_eth(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryDelegateKeysByEthAddress>,
-        ) -> Result<tonic::Response<super::QueryDelegateKeysByEthAddressResponse>, tonic::Status>
-        {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn get_delegate_key_by_eth(&mut self, request: impl tonic::IntoRequest<super::QueryDelegateKeyByEthRequest>) -> Result<tonic::Response<super::QueryDelegateKeyByEthResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetDelegateKeyByEth");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetDelegateKeyByEth");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn get_delegate_key_by_orchestrator(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryDelegateKeysByOrchestratorAddress>,
-        ) -> Result<
-            tonic::Response<super::QueryDelegateKeysByOrchestratorAddressResponse>,
-            tonic::Status,
-        > {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn get_delegate_key_by_orchestrator(&mut self, request: impl tonic::IntoRequest<super::QueryDelegateKeyByOrchestratorRequest>) -> Result<tonic::Response<super::QueryDelegateKeyByOrchestratorResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/GetDelegateKeyByOrchestrator",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetDelegateKeyByOrchestrator");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn get_pending_send_to_eth(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryPendingSendToEth>,
-        ) -> Result<tonic::Response<super::QueryPendingSendToEthResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn get_pending_send_to_eth(&mut self, request: impl tonic::IntoRequest<super::QueryPendingSendToEthRequest>) -> Result<tonic::Response<super::QueryPendingSendToEthResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path =
-                http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetPendingSendToEth");
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetPendingSendToEth");
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn get_ibc_sequence_height_by_channel(
-            &mut self,
-            request: impl tonic::IntoRequest<super::QueryIbcSequenceHeightRequest>,
-        ) -> Result<tonic::Response<super::QueryIbcSequenceHeightResponse>, tonic::Status> {
-            self.inner.ready().await.map_err(|e| {
-                tonic::Status::new(
-                    tonic::Code::Unknown,
-                    format!("Service was not ready: {}", e.into()),
-                )
-            })?;
+        pub async fn get_ibc_sequence_height_by_channel(&mut self, request: impl tonic::IntoRequest<super::QueryIbcSequenceHeightRequest>) -> Result<tonic::Response<super::QueryIbcSequenceHeightResponse>, tonic::Status> {
+            self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
             let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/fx.gravity.v1.Query/GetIbcSequenceHeightByChannel",
-            );
+            let path = http::uri::PathAndQuery::from_static("/fx.gravity.v1.Query/GetIbcSequenceHeightByChannel");
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
 
-    impl<T: Clone> Clone for QueryClient<T> {
-        fn clone(&self) -> Self {
-            Self {
-                inner: self.inner.clone(),
-            }
-        }
-    }
+    impl<T: Clone> Clone for QueryClient<T> { fn clone(&self) -> Self { Self { inner: self.inner.clone() } } }
 
-    impl<T> std::fmt::Debug for QueryClient<T> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            write!(f, "QueryClient {{ ... }}")
-        }
-    }
+    impl<T> std::fmt::Debug for QueryClient<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "QueryClient {{ ... }}") } }
 }
 
 /// SignType defines messages that have been signed by an orchestrator

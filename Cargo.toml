@@ -7,7 +7,6 @@ members = [
     "fxeth",
     "prometheus",
     "proto-build",
-    "relayer",
 ]
 
 default-members = ["fxeth"]

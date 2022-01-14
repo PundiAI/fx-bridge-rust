@@ -104,15 +104,6 @@ impl ERC20 {
             .await?;
         Ok(transaction_receipt)
     }
-    // ///"Calls the contract's `decreaseAllowance` (0xa457c2d7) function"
-    // pub async fn decrease_allowance(
-    //     &self,
-    //     spender: Address,
-    //     subtracted_value: U256,
-    // ) -> Result<bool> {
-    // }
-    // ///"Calls the contract's `increaseAllowance` (0x39509351) function"
-    // pub async fn increase_allowance(&self, spender: Address, added_value: U256) -> Result<bool> {}
     ///"Calls the contract's `transfer` (0xa9059cbb) function"
     pub async fn transfer(&self, recipient: Address, amount: U256) -> Result<TransactionReceipt> {
         if self.private_key.is_none() {
@@ -143,18 +134,6 @@ impl ERC20 {
             .await?;
         Ok(transaction_receipt)
     }
-    // ///"Calls the contract's `transferFrom` (0x23b872dd) function"
-    // pub async fn transfer_from(
-    //     &self,
-    //     sender: Address,
-    //     recipient: Address,
-    //     amount: U256,
-    // ) -> Result<bool> {
-    // }
-    // ///"Gets the contract's `Approval` event"]
-    // pub async fn approval_filter(&self) -> Event<M, ApprovalFilter> {}
-    // ///"Gets the contract's `Transfer` event"]
-    // pub async fn transfer_filter(&self) -> Event<M, TransferFilter> {}
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

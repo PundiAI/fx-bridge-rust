@@ -1,4 +1,3 @@
 /target/
 /Cargo.lock
-/decrypt/decrypt
-go.sum
+/decrypt

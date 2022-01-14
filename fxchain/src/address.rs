@@ -6,8 +6,10 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
+/// fx chain address prefix
 pub const DEFAULT_BECH32_PREFIX: &str = "fx";
 
+/// fx chain validator address prefix
 pub const VALIDATOR_ADDRESS_PREFIX: &str = "fxvaloper";
 
 #[derive(Default, PartialEq, Eq, Copy, Clone, Deserialize, Hash)]

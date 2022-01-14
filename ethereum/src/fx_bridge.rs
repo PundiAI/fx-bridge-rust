@@ -4,17 +4,18 @@ use std::time;
 use eyre::Result;
 use sha3::{Digest, Keccak256};
 use web3::api::{Eth, Namespace};
-use web3::contract::tokens::Tokenize;
 use web3::contract::{Contract, Options};
-use web3::ethabi::Hash;
+use web3::contract::tokens::Tokenize;
 use web3::ethabi::{Contract as ContractABI, Token};
+use web3::ethabi::Hash;
 use web3::signing::Key;
 use web3::transports::Http;
-use web3::types::{Address, BlockId, BlockNumber, Bytes, TransactionParameters, U256, U64};
+use web3::types::{Address, BlockId, BlockNumber, Bytes, CallRequest, TransactionParameters, U256, U64};
 use web3::types::{FilterBuilder, Log, TransactionReceipt};
 use web3::Web3;
 
 use crate::confirm_tx::send_raw_transaction_with_confirmation;
+use crate::gas_price::get_max_gas_price;
 use crate::private_key::PrivateKey;
 use crate::TX_CONFIRMATIONS_BLOCK_NUMBER;
 
@@ -177,41 +178,10 @@ impl FxBridge {
             .await?;
         Ok(result)
     }
-    //"Calls the contract's `addBridgeToken` (0x13489515) function"
-    // pub async fn add_bridge_token(&self, token_addr: Address) -> Result<bool> {
-    // }
-    //"Calls the contract's `delBridgeToken` (0xcadcbecc) function"
-    // pub async fn del_bridge_token(&self, token_addr: Address) -> Result<bool> {
-    // }
     ///"Calls the contract's `sendToFx` (0xd593c5bf) function"
     pub async fn send_to_fx(&self, token_contract: Address, destination: [u8; 32], target_ibc: [u8; 32], amount: U256) -> Result<TransactionReceipt> {
-        if self.private_key.is_none() {
-            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
-        }
-        let mut options = self.options.clone();
-        options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
-            nonce
-        } else {
-            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
-        });
-        options.gas_price = if let Some(gas_price) = self.options.gas_price {
-            Some(gas_price)
-        } else {
-            let gas_price = self.eth.gas_price().await?;
-            Some(gas_price)
-        };
-        options.gas = if let Some(gas) = self.options.gas {
-            Some(gas)
-        } else {
-            let gas = self
-                .contract
-                .estimate_gas("sendToFx", (token_contract, destination, target_ibc, amount), self.from.clone(), options.clone())
-                .await?;
-            Some(gas)
-        };
-
         let transaction_receipt = self
-            .signed_call_with_confirmations("sendToFx", (token_contract, destination, target_ibc, amount), options.clone(), TX_CONFIRMATIONS_BLOCK_NUMBER)
+            .signed_call_with_confirmations("sendToFx", (token_contract, destination, target_ibc, amount), TX_CONFIRMATIONS_BLOCK_NUMBER)
             .await?;
         Ok(transaction_receipt)
     }
@@ -231,49 +201,6 @@ impl FxBridge {
         batch_timeout: U256,
         fee_receive: Address,
     ) -> Result<TransactionReceipt> {
-        if self.private_key.is_none() {
-            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
-        }
-        let mut options = self.options.clone();
-        options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
-            nonce
-        } else {
-            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
-        });
-        options.gas_price = if let Some(gas_price) = self.options.gas_price {
-            Some(gas_price)
-        } else {
-            let gas_price = self.eth.gas_price().await?;
-            Some(gas_price)
-        };
-        options.gas = if let Some(gas) = self.options.gas {
-            Some(gas)
-        } else {
-            let gas = self
-                .contract
-                .estimate_gas(
-                    "submitBatch",
-                    (
-                        current_validators.clone(),
-                        current_powers.clone(),
-                        v.clone(),
-                        r.clone(),
-                        s.clone(),
-                        amounts.clone(),
-                        destinations.clone(),
-                        fees.clone(),
-                        nonce_array,
-                        token_contract,
-                        batch_timeout,
-                        fee_receive,
-                    ),
-                    self.from.clone(),
-                    options.clone(),
-                )
-                .await?;
-            Some(gas)
-        };
-
         let transaction_receipt = self
             .signed_call_with_confirmations(
                 "submitBatch",
@@ -291,7 +218,6 @@ impl FxBridge {
                     batch_timeout,
                     fee_receive,
                 ),
-                options.clone(),
                 TX_CONFIRMATIONS_BLOCK_NUMBER,
             )
             .await?;
@@ -310,57 +236,21 @@ impl FxBridge {
         r: Vec<Token>,
         s: Vec<Token>,
     ) -> Result<TransactionReceipt> {
-        if self.private_key.is_none() {
-            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
-        }
-        let mut options = self.options.clone();
-        options.nonce = Option::from(if let Some(nonce) = self.options.nonce {
-            nonce
-        } else {
-            self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?
-        });
-        options.gas_price = if let Some(gas_price) = self.options.gas_price {
-            Some(gas_price)
-        } else {
-            let gas_price = self.eth.gas_price().await?;
-            Some(gas_price)
-        };
-        options.gas = if let Some(gas) = self.options.gas {
-            Some(gas)
-        } else {
-            let gas = self
-                .contract
-                .estimate_gas(
-                    "updateValset",
-                    (
-                        new_validators.clone(),
-                        new_powers.clone(),
-                        new_valset_nonce,
-                        current_validators.clone(),
-                        current_powers.clone(),
-                        current_valset_nonce,
-                        v.clone(),
-                        r.clone(),
-                        s.clone(),
-                    ),
-                    self.from.clone(),
-                    options.clone(),
-                )
-                .await?;
-            Some(gas)
-        };
-
         let transaction_receipt = self
             .signed_call_with_confirmations(
                 "updateValset",
                 (new_validators, new_powers, new_valset_nonce, current_validators, current_powers, current_valset_nonce, v, r, s),
-                options.clone(),
                 TX_CONFIRMATIONS_BLOCK_NUMBER,
             )
             .await?;
         Ok(transaction_receipt)
     }
-    pub async fn signed_call_with_confirmations(&self, func: &str, params: impl Tokenize, options: Options, confirmations: usize) -> Result<TransactionReceipt> {
+
+    pub async fn signed_call_with_confirmations(&self, func: &str, params: impl Tokenize, confirmations: usize) -> Result<TransactionReceipt> {
+        if self.private_key.is_none() {
+            return Err(eyre::Error::msg("no private key to authorize the transaction with"));
+        }
+        info!("signed_call_with_confirmations: {}", func);
         let poll_interval = time::Duration::from_secs(10);
         let fn_data = self
             .contract
@@ -368,59 +258,68 @@ impl FxBridge {
             .function(func)
             .and_then(|function| function.encode_input(&params.into_tokens()))
             .map_err(|err| web3::Error::Decoder(format!("{:?}", err)))?;
+
         let accounts = web3::api::Accounts::new(self.eth.transport().clone());
         let mut tx = TransactionParameters {
-            nonce: options.nonce,
             to: Some(self.contract.address()),
-            gas_price: options.gas_price,
             data: Bytes(fn_data),
             ..Default::default()
         };
-        if let Some(gas) = options.gas {
-            tx.gas = gas;
+        tx.nonce = Some(self.options.nonce.unwrap_or(self.eth.transaction_count(self.from, Some(BlockNumber::Latest)).await?));
+        tx.value = self.options.value.unwrap_or(U256::from(0));
+        let block = self.eth.block(BlockId::Number(BlockNumber::Latest)).await?.ok_or(eyre::Error::msg("invalid block"))?;
+        let gas_price = self.eth.gas_price().await?;
+        let max_gas_price = get_max_gas_price();
+        if gas_price > max_gas_price {
+            return Err(eyre::Error::msg(format!("gas price {} > mas gas price {}", gas_price, max_gas_price)));
         }
-        if let Some(value) = options.value {
-            tx.value = value;
-        }
-        let mut is_timeout: u64 = 0;
-        loop {
-            if is_timeout > 0 {
-                let gas_price = self.eth.gas_price().await?;
-                tx.gas_price = Some(gas_price);
+        if block.base_fee_per_gas.is_some() && self.options.gas_price.is_none() {
+            // tx.max_priority_fee_per_gas = Some(self.options.max_priority_fee_per_gas.unwrap_or(self.eth.gas_price().await? - block.base_fee_per_gas.unwrap()));
+            tx.max_priority_fee_per_gas = Some(self.options.max_priority_fee_per_gas.unwrap_or( U256::from(10).pow(U256::from(8)) * 12));
+            // tx.max_fee_per_gas = Some(self.options.max_fee_per_gas.unwrap_or(block.base_fee_per_gas.unwrap() * 2 + tx.max_priority_fee_per_gas.unwrap()));
+            tx.max_fee_per_gas = Some(self.options.max_fee_per_gas.unwrap_or(gas_price + U256::from(10).pow(U256::from(9)) * 10));
+            if tx.max_fee_per_gas.cmp(&tx.max_priority_fee_per_gas).is_le() {
+                return Err(eyre::Error::msg(format!(
+                    "maxFeePerGas ({:?}) < maxPriorityFeePerGas ({:?})",
+                    tx.max_fee_per_gas, tx.max_priority_fee_per_gas
+                )));
             }
-            let key = self.private_key.clone().unwrap();
-            let signed = accounts.sign_transaction(tx.clone(), key).await?;
+            tx.transaction_type = Some(U64::from(2));
+        } else {
+            if self.options.max_fee_per_gas.is_some() || self.options.max_priority_fee_per_gas.is_some() {
+                return Err(eyre::Error::msg("maxFeePerGas or maxPriorityFeePerGas specified but london is not active yet"));
+            }
+            tx.gas_price = Some(self.options.gas_price.unwrap_or(gas_price));
+            tx.transaction_type = Some(U64::from(1));
+        }
+        tx.gas = self.options.gas.unwrap_or(self.estimate_gas(&tx).await?);
 
-            let result = send_raw_transaction_with_confirmation(self.eth.transport().clone(), signed.raw_transaction, poll_interval, confirmations).await;
-            match result {
-                Ok(receipt) => {
-                    return Ok(receipt);
-                }
-                Err(err) => match err {
-                    web3::error::Error::Transport(msg) => {
-                        if msg == "Transport error: tx confirm timeout" {
-                            is_timeout = is_timeout + 1;
-                            continue;
-                        }
-                    }
-                    _ => {
-                        return Err(eyre::Report::from(err));
-                    }
-                },
-            }
-        }
+        let key = self.private_key.clone().unwrap();
+        let signed = accounts.sign_transaction(tx.clone(), key).await?;
+        let receipt = send_raw_transaction_with_confirmation(self.eth.transport().clone(), signed.raw_transaction, poll_interval, confirmations).await?;
+        return Ok(receipt);
     }
-    //"Gets the contract's `SendToFxEvent` event"]
-    // pub async fn send_to_fx_event_filter(&self) -> Event<M, SendToFxEventFilter> {
-    // }
-    //"Gets the contract's `TransactionBatchExecutedEvent` event"]
-    // pub async fn transaction_batch_executed_event_filter(
-    //     &self,
-    // ) -> Event<M, TransactionBatchExecutedEventFilter> {
-    // }
-    //"Gets the contract's `ValsetUpdatedEvent` event"]
-    // pub async fn valset_updated_event_filter(&self) -> Event<M, ValsetUpdatedEventFilter> {
-    // }
+
+    pub async fn estimate_gas(&self, tx: &TransactionParameters) -> Result<U256> {
+        self.eth
+            .estimate_gas(
+                CallRequest {
+                    from: Some(self.from),
+                    to: tx.to,
+                    gas: None,
+                    gas_price: tx.gas_price,
+                    value: Some(tx.value),
+                    data: Some(tx.data.clone()),
+                    transaction_type: tx.transaction_type,
+                    access_list: tx.access_list.clone(),
+                    max_fee_per_gas: tx.max_fee_per_gas,
+                    max_priority_fee_per_gas: tx.max_priority_fee_per_gas,
+                },
+                None,
+            )
+            .await
+            .map_err(Into::into)
+    }
 }
 
 pub async fn query_all_event_san_block(
@@ -863,7 +762,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_query_fx_bridge_all_event() {
-        let transport = web3::transports::Http::new("http://127.0.0.1:8545").unwrap();
+        let transport = web3::transports::Http::new(
+            "http://127.0.0.1:8545",
+        )
+            .unwrap();
         let web3 = web3::Web3::new(transport);
 
         let bridge_addr = Address::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
@@ -885,7 +787,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_query_all_event_san_block() {
-        let transport = web3::transports::Http::new("http://127.0.0.1:8545").unwrap();
+        let transport = web3::transports::Http::new(
+            "http://127.0.0.1:8545",
+        )
+            .unwrap();
         let web3 = web3::Web3::new(transport);
 
         let bridge_addr = Address::from_str("0x57c62672F61f8FF14b61AE70C516C73aCF3374cA").unwrap();
@@ -980,7 +885,9 @@ mod tests {
     "logIndex": "0x2",
     "blockHash": "0xb7fbe05d17d064e248ae6a92075e5817be136719b88b0dde64b49e240e779252"
   }
-"#).unwrap();
+"#,
+        )
+            .unwrap();
         assert_eq!(res.topics.first().unwrap(), &SendToFxEvent::signature());
         let event = SendToFxEvent::from_log(&res).unwrap();
         assert_eq!(event.erc20, Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap());
@@ -1011,7 +918,9 @@ mod tests {
     "logIndex": "0x2",
     "blockHash": "0xb7fbe05d17d064e248ae6a92075e5817be136719b88b0dde64b49e240e779252"
   }
-"#).unwrap();
+"#,
+        )
+            .unwrap();
         assert_eq!(res.topics.first().unwrap(), &SendToFxEvent::signature());
         let event = SendToFxEvent::from_log(&res).unwrap();
         assert_eq!(event.erc20, Address::from_str("0xd6c850aebfdc46d7f4c207e445cc0d6b0919bdbe").unwrap());
@@ -1043,7 +952,7 @@ mod tests {
   }
 "#,
         )
-        .unwrap();
+            .unwrap();
         assert_eq!(res.topics.first().unwrap(), &TransactionBatchExecutedEvent::signature());
         let event = TransactionBatchExecutedEvent::from_log(&res).unwrap();
 

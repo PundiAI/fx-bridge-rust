@@ -91,6 +91,3 @@ where
     let hash = Eth::new(&transport).send_raw_transaction(tx).await?;
     send_transaction_with_confirmation_(hash, transport, poll_interval, confirmations).await
 }
-
-#[cfg(test)]
-mod tests {}

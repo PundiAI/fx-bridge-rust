@@ -1,5 +1,7 @@
+use std::ops::Div;
 use std::str::FromStr;
 
+use cosmos_sdk_proto::cosmos::staking::v1beta1::BondStatus;
 use eyre::Result;
 use tokio::time::sleep;
 use tonic::transport::Channel;
@@ -9,6 +11,7 @@ use web3::types::{Address as EthAddress, U256};
 use ethereum::address::Checksum;
 use ethereum::private_key::{Key, PrivateKey as EthPrivateKey, PrivateKey};
 use fxchain::builder::Builder;
+use fxchain::grpc_client::get_orchestrator_validator_status;
 use fxchain::proto_ext::MessageExt;
 use fxchain::x::gravity::query_client::QueryClient as GravityQueryClient;
 use fxchain::x::gravity::QueryLastPendingBatchRequestByAddrRequest;
@@ -16,29 +19,40 @@ use fxchain::x::gravity::QueryLastPendingValsetRequestByAddrRequest;
 use fxchain::x::gravity::{MsgConfirmBatch, MsgValsetConfirm, OutgoingTxBatch, Valset};
 
 use crate::FX_AVG_BLOCK_TIME;
-use std::ops::Div;
 
-pub async fn eth_signer_main_loop(fx_builder: &Builder, grpc_channel: &Channel, eth_private_key: EthPrivateKey) {
+pub async fn eth_signer_main_loop(fx_builder: &Builder, grpc_channel: &Channel, eth_private_key: &EthPrivateKey) {
     let gravity_id = fxchain::grpc_client::get_gravity_id(grpc_channel).await.unwrap();
 
     loop {
-        let result = singer_last_pending_valset_request(fx_builder, grpc_channel, &eth_private_key, &gravity_id).await;
-        match result {
-            Err(report) => {
-                error!("singer last pending valset request error: {:?}", report.root_cause())
-            }
-            _ => {}
+        sleep(FX_AVG_BLOCK_TIME).await;
+
+        let result = get_orchestrator_validator_status(&grpc_channel, fx_builder.address()).await;
+        if result.is_err() {
+            warn!("Get orchestrator validator status failed {:?}", result.unwrap_err().root_cause());
+            continue;
+        }
+        let (status, eth_address_str) = result.unwrap();
+        if status != BondStatus::Bonded as i32 {
+            warn!("Get orchestrator validator status is not 'Bonded', {:?}", status);
+            continue;
+        }
+        if eth_address_str != eth_private_key.address().to_hex_string() {
+            panic!("invalid eth private key, expect {}", eth_address_str)
         }
 
-        let result = singer_last_pending_batch_request(fx_builder, grpc_channel, &eth_private_key, &gravity_id).await;
-        match result {
-            Err(report) => {
-                error!("singer last pending batch request error: {:?}", report.root_cause())
-            }
-            _ => {}
+        let result = singer_last_pending_valset_request(fx_builder, grpc_channel, eth_private_key, &gravity_id).await;
+        if result.is_err() {
+            error!("singer last pending valset request error: {:?}", result.unwrap_err().root_cause());
+            continue;
         }
+
+        let result = singer_last_pending_batch_request(fx_builder, grpc_channel, eth_private_key, &gravity_id).await;
+        if result.is_err() {
+            error!("singer last pending batch request error: {:?}", result.unwrap_err().root_cause());
+            continue;
+        }
+
         set_fx_key_balance_metrics(fx_builder, grpc_channel).await;
-        sleep(FX_AVG_BLOCK_TIME).await;
     }
 }
 
@@ -46,10 +60,10 @@ pub async fn set_fx_key_balance_metrics(fx_builder: &Builder, grpc_channel: &Cha
     let result = fxchain::grpc_client::get_balance(grpc_channel, fx_builder.address(), fx_builder.get_fee_denom()).await;
     match result {
         Ok(balance) => {
-            let amount = U256::from_str(balance.amount.as_str()).unwrap().div(U256::from(10).pow(U256::from(18)));
+            let amount = U256::from_dec_str(balance.amount.as_str()).unwrap().div(U256::from(10).pow(U256::from(18)));
             prometheus::metrics::FX_KEY_BALANCE.set(amount.as_u64() as f64)
         }
-        Err(report) => error!("Query fx account {} balance failed {}", fx_builder.address(), report),
+        Err(report) => error!("Query fx account {} balance failed {}", fx_builder.address(), report.root_cause()),
     }
 }
 
@@ -62,20 +76,21 @@ async fn singer_last_pending_valset_request(fx_builder: &Builder, grpc_channel: 
         .await?;
     let valsets = response.into_inner().valsets;
     if valsets.is_empty() {
-        trace!("No validator sets to sign, node is caught up!");
+        debug!("No validator sets to sign, node is caught up!");
         return Ok(());
     }
+    let eth_address = eth_private_key.address().to_hex_string();
     info!(
         "Sending {} valset confirms starting with nonce {}, valset update singer {}",
         valsets.len(),
         valsets[0].nonce,
-        eth_private_key.address().to_hex_string()
+        eth_address
     );
 
     let mut messages = Vec::new();
-    for valset in valsets {
-        info!("Submitting signature for valset {}, {}", valset.nonce, valset.height,);
-        let message = encode_valset_confirm_hash(gravity_id.clone(), valset.clone());
+    for valset in valsets.iter() {
+        info!("Submitting signature for valset {}, {}", valset.nonce, valset.height);
+        let message = encode_valset_confirm_hash(gravity_id.clone(), &valset);
         let eth_signature = eth_private_key.sign_ethereum_msg(message.as_slice()).unwrap();
         let confirm = MsgValsetConfirm {
             orchestrator: fx_builder.address().to_string(),
@@ -115,7 +130,8 @@ async fn singer_last_pending_batch_request(fx_builder: &Builder, grpc_channel: &
 
     let message = encode_tx_batch_confirm_hash(gravity_id.clone(), unsigned_batch.clone());
     let eth_signature = eth_private_key.sign_ethereum_msg(message.as_slice()).unwrap();
-    info!("Sending batch update with address {}", eth_private_key.address().to_hex_string(),);
+    info!("Sending batch update with address {}", eth_private_key.address().to_hex_string());
+
     let confirm = MsgConfirmBatch {
         token_contract: unsigned_batch.token_contract,
         orchestrator: fx_builder.address().to_string(),
@@ -134,7 +150,7 @@ async fn singer_last_pending_batch_request(fx_builder: &Builder, grpc_channel: &
     Ok(())
 }
 
-pub fn encode_valset_confirm_hash(gravity_id: String, valset: Valset) -> Vec<u8> {
+pub fn encode_valset_confirm_hash(gravity_id: String, valset: &Valset) -> Vec<u8> {
     let mut powers = Vec::new();
     let mut addresses = Vec::new();
     for item in valset.members.iter() {
@@ -215,7 +231,7 @@ mod tests {
             .unwrap();
         for valset in response.into_inner().valsets.iter() {
             // println!("{:?}", valset);
-            let message = encode_valset_confirm_hash(gravity_id.clone(), valset.clone());
+            let message = encode_valset_confirm_hash(gravity_id.clone(), valset);
             let eth_signature = eth_private_key.sign_ethereum_msg(message.as_slice()).unwrap();
             // println!("{:x}", eth_signature.to_hash());
             // let address = eth_signature.recover(message.as_slice()).unwrap();
@@ -253,6 +269,7 @@ mod tests {
             })
             .await
             .unwrap();
+
         let batch = response.into_inner().batch.unwrap();
         // println!("{:?}", batch);
         let message = encode_tx_batch_confirm_hash(gravity_id.clone(), batch.clone());
@@ -266,6 +283,7 @@ mod tests {
             })
             .await
             .unwrap();
+
         let batch = response.into_inner().batch.unwrap();
         // println!("{:?}", batch);
         let message = encode_tx_batch_confirm_hash(gravity_id.clone(), batch.clone());
@@ -290,6 +308,7 @@ mod tests {
         let message_str = "fb8e876ac0d212abcea3ff8975f5ecbebd3c400747496e05e8ea5018d200b66e";
         let message = H256::from_str(message_str).unwrap();
         let message = ethereum_msg_hash(message);
+        println!("{:?}", message);
 
         let address = eth_signature.recover(message.as_bytes()).unwrap();
         println!("{:?}", address); //0x7add5a739B2882B67e60d2e7d0c2E4A825131787
@@ -300,5 +319,16 @@ mod tests {
         let eth_private_key_str = "7490923dfece4901e603a1a0429ad74327ca574d7033bba145b68dcd00aa7a5d";
         let private_key = EthPrivateKey::from_str(eth_private_key_str).unwrap();
         println!("{}", private_key.address().to_hex_string());
+    }
+
+    #[tokio::test]
+    async fn test_set_fx_key_balance_metrics() {
+        let fx_private_key = FxPrivateKey::from_phrase(FX_MNEMONIC, "").unwrap();
+        let fx_address = fx_private_key.public_key().to_address().to_string();
+        let grpc_channel = new_grpc_channel(FX_GRPC_URL).await.unwrap();
+        let auth_account = get_account_info(&grpc_channel, fx_address.clone()).await.unwrap();
+        let fx_chain_id = get_chain_id(&grpc_channel).await.unwrap();
+        let fx_builder = Builder::new(fx_chain_id, fx_private_key, auth_account.account_number, "FX");
+        set_fx_key_balance_metrics(&fx_builder, &grpc_channel).await
     }
 }
