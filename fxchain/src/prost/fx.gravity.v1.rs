@@ -18,11 +18,11 @@ pub struct Attestation {
     #[prost(bool, tag = "1")]
     pub observed: bool,
     #[prost(string, repeated, tag = "2")]
-    pub votes: ::std::vec::Vec<std::string::String>,
+    pub votes: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(uint64, tag = "3")]
     pub height: u64,
     #[prost(message, optional, tag = "4")]
-    pub claim: ::std::option::Option<::prost_types::Any>,
+    pub claim: ::core::option::Option<::prost_types::Any>,
 }
 
 /// ERC20Token unique identifier for an Ethereum ERC20 token.
@@ -33,9 +33,9 @@ pub struct Attestation {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Erc20Token {
     #[prost(string, tag = "1")]
-    pub contract: std::string::String,
+    pub contract: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub amount: std::string::String,
+    pub amount: ::prost::alloc::string::String,
 }
 
 /// ClaimType is the cosmos type of an event from the counterpart chain that can
@@ -54,15 +54,15 @@ pub enum ClaimType {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct IdSet {
     #[prost(uint64, repeated, tag = "1")]
-    pub ids: ::std::vec::Vec<u64>,
+    pub ids: ::prost::alloc::vec::Vec<u64>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchFees {
     #[prost(string, tag = "1")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub total_fees: std::string::String,
+    pub total_fees: ::prost::alloc::string::String,
     #[prost(uint64, tag = "3")]
     pub total_txs: u64,
 }
@@ -75,13 +75,13 @@ pub struct OutgoingTxBatch {
     #[prost(uint64, tag = "2")]
     pub batch_timeout: u64,
     #[prost(message, repeated, tag = "3")]
-    pub transactions: ::std::vec::Vec<OutgoingTransferTx>,
+    pub transactions: ::prost::alloc::vec::Vec<OutgoingTransferTx>,
     #[prost(string, tag = "4")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(uint64, tag = "5")]
     pub block: u64,
     #[prost(string, tag = "6")]
-    pub fee_receive: std::string::String,
+    pub fee_receive: ::prost::alloc::string::String,
 }
 
 /// OutgoingTransferTx represents an individual send from gravity to ETH
@@ -90,13 +90,13 @@ pub struct OutgoingTransferTx {
     #[prost(uint64, tag = "1")]
     pub id: u64,
     #[prost(string, tag = "2")]
-    pub sender: std::string::String,
+    pub sender: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub dest_address: std::string::String,
+    pub dest_address: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "4")]
-    pub erc20_token: ::std::option::Option<Erc20Token>,
+    pub erc20_token: ::core::option::Option<Erc20Token>,
     #[prost(message, optional, tag = "5")]
-    pub erc20_fee: ::std::option::Option<Erc20Token>,
+    pub erc20_fee: ::core::option::Option<Erc20Token>,
 }
 
 /// BridgeValidator represents a validator's ETH address and its power
@@ -105,7 +105,7 @@ pub struct BridgeValidator {
     #[prost(uint64, tag = "1")]
     pub power: u64,
     #[prost(string, tag = "2")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
 }
 
 /// Valset is the Ethereum Bridge Multsig Set, each gravity validator also
@@ -116,7 +116,7 @@ pub struct Valset {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(message, repeated, tag = "2")]
-    pub members: ::std::vec::Vec<BridgeValidator>,
+    pub members: ::prost::alloc::vec::Vec<BridgeValidator>,
     #[prost(uint64, tag = "3")]
     pub height: u64,
 }
@@ -139,9 +139,9 @@ pub struct LastObservedEthereumBlockHeight {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Erc20ToDenom {
     #[prost(string, tag = "1")]
-    pub erc20: std::string::String,
+    pub erc20: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub denom: std::string::String,
+    pub denom: ::prost::alloc::string::String,
 }
 
 /// MsgSetOrchestratorAddress
@@ -160,11 +160,11 @@ pub struct Erc20ToDenom {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgSetOrchestratorAddress {
     #[prost(string, tag = "1")]
-    pub validator: std::string::String,
+    pub validator: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -190,11 +190,11 @@ pub struct MsgValsetConfirm {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub signature: std::string::String,
+    pub signature: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -215,36 +215,38 @@ pub struct MsgValsetConfirmResponse {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgSendToEth {
     #[prost(string, tag = "1")]
-    pub sender: std::string::String,
+    pub sender: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub eth_dest: std::string::String,
+    pub eth_dest: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
-    pub amount: ::std::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
+    pub amount: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     #[prost(message, optional, tag = "4")]
-    pub bridge_fee: ::std::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
+    pub bridge_fee: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgSendToEthResponse {}
+// MsgRequestBatch
+// this is a message anyone can send that requests a batch of transactions to
+// send across the bridge be created for whatever block height this message is
+// included in. This acts as a coordination point, the handler for this message
+// looks at the AddToOutgoingPool tx's in the store and generates a batch, also
+// available in the store tied to this message. The validators then grab this
+// batch, sign it, submit the signatures with a MsgConfirmBatch before a relayer
+// can finally submit the batch
+// -------------
+// feeReceive:
 
-/// MsgRequestBatch
-/// this is a message anyone can send that requests a batch of transactions to
-/// send across the bridge be created for whatever block height this message is
-/// included in. This acts as a coordination point, the handler for this message
-/// looks at the AddToOutgoingPool tx's in the store and generates a batch, also
-/// available in the store tied to this message. The validators then grab this
-/// batch, sign it, submit the signatures with a MsgConfirmBatch before a relayer
-/// can finally submit the batch
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgRequestBatch {
     #[prost(string, tag = "1")]
-    pub sender: std::string::String,
+    pub sender: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub denom: std::string::String,
+    pub denom: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub minimum_fee: std::string::String,
+    pub minimum_fee: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub fee_receive: std::string::String,
+    pub fee_receive: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -263,13 +265,13 @@ pub struct MsgConfirmBatch {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub eth_signer: std::string::String,
+    pub eth_signer: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
-    pub signature: std::string::String,
+    pub signature: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -287,17 +289,17 @@ pub struct MsgDepositClaim {
     #[prost(uint64, tag = "2")]
     pub block_height: u64,
     #[prost(string, tag = "3")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub amount: std::string::String,
+    pub amount: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
-    pub eth_sender: std::string::String,
+    pub eth_sender: ::prost::alloc::string::String,
     #[prost(string, tag = "6")]
-    pub fx_receiver: std::string::String,
+    pub fx_receiver: ::prost::alloc::string::String,
     #[prost(string, tag = "7")]
-    pub target_ibc: std::string::String,
+    pub target_ibc: ::prost::alloc::string::String,
     #[prost(string, tag = "8")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -314,9 +316,9 @@ pub struct MsgWithdrawClaim {
     #[prost(uint64, tag = "3")]
     pub batch_nonce: u64,
     #[prost(string, tag = "4")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -330,7 +332,7 @@ pub struct MsgCancelSendToEth {
     #[prost(uint64, tag = "1")]
     pub transaction_id: u64,
     #[prost(string, tag = "2")]
-    pub sender: std::string::String,
+    pub sender: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -343,15 +345,15 @@ pub struct MsgFxOriginatedTokenClaim {
     #[prost(uint64, tag = "2")]
     pub block_height: u64,
     #[prost(string, tag = "3")]
-    pub token_contract: std::string::String,
+    pub token_contract: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub name: std::string::String,
+    pub name: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
-    pub symbol: std::string::String,
+    pub symbol: ::prost::alloc::string::String,
     #[prost(uint64, tag = "6")]
     pub decimals: u64,
     #[prost(string, tag = "7")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -368,9 +370,9 @@ pub struct MsgValsetUpdatedClaim {
     #[prost(uint64, tag = "3")]
     pub valset_nonce: u64,
     #[prost(message, repeated, tag = "4")]
-    pub members: ::std::vec::Vec<BridgeValidator>,
+    pub members: ::prost::alloc::vec::Vec<BridgeValidator>,
     #[prost(string, tag = "6")]
-    pub orchestrator: std::string::String,
+    pub orchestrator: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -378,12 +380,15 @@ pub struct MsgValsetUpdatedClaimResponse {}
 
 #[doc = r" Generated client implementations."]
 pub mod msg_client {
-    #![allow(unused_variables, dead_code, missing_docs)]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value, )]
 
     use tonic::codegen::*;
 
     #[doc = " Msg defines the state transitions possible within gravity"]
-    pub struct MsgClient<T> { inner: tonic::client::Grpc<T> }
+    #[derive(Debug, Clone)]
+    pub struct MsgClient<T> {
+        inner: tonic::client::Grpc<T>,
+    }
 
     impl MsgClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
@@ -393,14 +398,24 @@ pub mod msg_client {
         }
     }
 
-    impl<T> MsgClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + HttpBody + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send, {
+    impl<T> MsgClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as Body>::Error: Into<StdError> + Send, {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
             Self { inner }
         }
-        pub fn with_interceptor(inner: T, interceptor: impl Into<tonic::Interceptor>) -> Self {
-            let inner = tonic::client::Grpc::with_interceptor(inner, interceptor);
-            Self { inner }
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> MsgClient<InterceptedService<T, F>> where F: tonic::service::Interceptor, T: tonic::codegen::Service<http::Request<tonic::body::BoxBody>, Response=http::Response<<T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody>>, <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error: Into<StdError> + Send + Sync, { MsgClient::new(InterceptedService::new(inner, interceptor)) }
+        #[doc = r" Compress requests with `gzip`."]
+        #[doc = r""]
+        #[doc = r" This requires the server to support it otherwise it might respond with an"]
+        #[doc = r" error."]
+        pub fn send_gzip(mut self) -> Self {
+            self.inner = self.inner.send_gzip();
+            self
+        }
+        #[doc = r" Enable decompressing responses with `gzip`."]
+        pub fn accept_gzip(mut self) -> Self {
+            self.inner = self.inner.accept_gzip();
+            self
         }
         pub async fn valset_confirm(&mut self, request: impl tonic::IntoRequest<super::MsgValsetConfirm>) -> Result<tonic::Response<super::MsgValsetConfirmResponse>, tonic::Status> {
             self.inner.ready().await.map_err(|e| { tonic::Status::new(tonic::Code::Unknown, format!("Service was not ready: {}", e.into())) })?;
@@ -463,10 +478,6 @@ pub mod msg_client {
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
-
-    impl<T: Clone> Clone for MsgClient<T> { fn clone(&self) -> Self { Self { inner: self.inner.clone() } } }
-
-    impl<T> std::fmt::Debug for MsgClient<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "MsgClient {{ ... }}") } }
 }// Params represent the Gravity genesis and store parameters
 // gravity_id:
 // a random 32 byte value to prevent signature reuse, for example if the
@@ -534,11 +545,11 @@ pub mod msg_client {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Params {
     #[prost(string, tag = "1")]
-    pub gravity_id: std::string::String,
+    pub gravity_id: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub contract_source_hash: std::string::String,
+    pub contract_source_hash: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub bridge_eth_address: std::string::String,
+    pub bridge_eth_address: ::prost::alloc::string::String,
     #[prost(uint64, tag = "5")]
     pub bridge_chain_id: u64,
     #[prost(uint64, tag = "6")]
@@ -553,47 +564,47 @@ pub struct Params {
     pub average_block_time: u64,
     #[prost(uint64, tag = "12")]
     pub average_eth_block_time: u64,
-    #[prost(bytes, tag = "13")]
-    pub slash_fraction_valset: std::vec::Vec<u8>,
-    #[prost(bytes, tag = "14")]
-    pub slash_fraction_batch: std::vec::Vec<u8>,
-    #[prost(bytes, tag = "15")]
-    pub slash_fraction_claim: std::vec::Vec<u8>,
-    #[prost(bytes, tag = "16")]
-    pub slash_fraction_conflicting_claim: std::vec::Vec<u8>,
+    #[prost(bytes = "vec", tag = "13")]
+    pub slash_fraction_valset: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes = "vec", tag = "14")]
+    pub slash_fraction_batch: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes = "vec", tag = "15")]
+    pub slash_fraction_claim: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes = "vec", tag = "16")]
+    pub slash_fraction_conflicting_claim: ::prost::alloc::vec::Vec<u8>,
     #[prost(uint64, tag = "17")]
     pub unbond_slashing_valsets_window: u64,
     #[prost(uint64, tag = "18")]
     pub ibc_transfer_timeout_height: u64,
-    #[prost(bytes, tag = "19")]
-    pub valset_update_power_change_percent: std::vec::Vec<u8>,
+    #[prost(bytes = "vec", tag = "19")]
+    pub valset_update_power_change_percent: ::prost::alloc::vec::Vec<u8>,
 }
 
 /// GenesisState struct
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GenesisState {
     #[prost(message, optional, tag = "1")]
-    pub params: ::std::option::Option<Params>,
+    pub params: ::core::option::Option<Params>,
     #[prost(uint64, tag = "2")]
     pub last_observed_nonce: u64,
     #[prost(message, repeated, tag = "3")]
-    pub valsets: ::std::vec::Vec<Valset>,
+    pub valsets: ::prost::alloc::vec::Vec<Valset>,
     #[prost(message, repeated, tag = "4")]
-    pub valset_confirms: ::std::vec::Vec<MsgValsetConfirm>,
+    pub valset_confirms: ::prost::alloc::vec::Vec<MsgValsetConfirm>,
     #[prost(message, repeated, tag = "5")]
-    pub batches: ::std::vec::Vec<OutgoingTxBatch>,
+    pub batches: ::prost::alloc::vec::Vec<OutgoingTxBatch>,
     #[prost(message, repeated, tag = "6")]
-    pub batch_confirms: ::std::vec::Vec<MsgConfirmBatch>,
+    pub batch_confirms: ::prost::alloc::vec::Vec<MsgConfirmBatch>,
     #[prost(message, repeated, tag = "7")]
-    pub attestations: ::std::vec::Vec<Attestation>,
+    pub attestations: ::prost::alloc::vec::Vec<Attestation>,
     #[prost(message, repeated, tag = "8")]
-    pub delegate_keys: ::std::vec::Vec<MsgSetOrchestratorAddress>,
+    pub delegate_keys: ::prost::alloc::vec::Vec<MsgSetOrchestratorAddress>,
     #[prost(message, repeated, tag = "9")]
-    pub erc20_to_denoms: ::std::vec::Vec<Erc20ToDenom>,
+    pub erc20_to_denoms: ::prost::alloc::vec::Vec<Erc20ToDenom>,
     #[prost(message, repeated, tag = "10")]
-    pub unbatched_transfers: ::std::vec::Vec<OutgoingTransferTx>,
+    pub unbatched_transfers: ::prost::alloc::vec::Vec<OutgoingTransferTx>,
     #[prost(message, repeated, tag = "11")]
-    pub module_coins: ::std::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
+    pub module_coins: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -602,7 +613,7 @@ pub struct QueryParamsRequest {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryParamsResponse {
     #[prost(message, optional, tag = "1")]
-    pub params: ::std::option::Option<Params>,
+    pub params: ::core::option::Option<Params>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -611,7 +622,7 @@ pub struct QueryCurrentValsetRequest {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryCurrentValsetResponse {
     #[prost(message, optional, tag = "1")]
-    pub valset: ::std::option::Option<Valset>,
+    pub valset: ::core::option::Option<Valset>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -623,7 +634,7 @@ pub struct QueryValsetRequestRequest {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryValsetRequestResponse {
     #[prost(message, optional, tag = "1")]
-    pub valset: ::std::option::Option<Valset>,
+    pub valset: ::core::option::Option<Valset>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -631,13 +642,13 @@ pub struct QueryValsetConfirmRequest {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryValsetConfirmResponse {
     #[prost(message, optional, tag = "1")]
-    pub confirm: ::std::option::Option<MsgValsetConfirm>,
+    pub confirm: ::core::option::Option<MsgValsetConfirm>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -649,7 +660,7 @@ pub struct QueryValsetConfirmsByNonceRequest {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryValsetConfirmsByNonceResponse {
     #[prost(message, repeated, tag = "1")]
-    pub confirms: ::std::vec::Vec<MsgValsetConfirm>,
+    pub confirms: ::prost::alloc::vec::Vec<MsgValsetConfirm>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -658,19 +669,19 @@ pub struct QueryLastValsetRequestsRequest {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastValsetRequestsResponse {
     #[prost(message, repeated, tag = "1")]
-    pub valsets: ::std::vec::Vec<Valset>,
+    pub valsets: ::prost::alloc::vec::Vec<Valset>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastPendingValsetRequestByAddrRequest {
     #[prost(string, tag = "1")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastPendingValsetRequestByAddrResponse {
     #[prost(message, repeated, tag = "1")]
-    pub valsets: ::std::vec::Vec<Valset>,
+    pub valsets: ::prost::alloc::vec::Vec<Valset>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -679,19 +690,19 @@ pub struct QueryBatchFeeRequest {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryBatchFeeResponse {
     #[prost(message, repeated, tag = "1")]
-    pub batch_fees: ::std::vec::Vec<BatchFees>,
+    pub batch_fees: ::prost::alloc::vec::Vec<BatchFees>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastPendingBatchRequestByAddrRequest {
     #[prost(string, tag = "1")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastPendingBatchRequestByAddrResponse {
     #[prost(message, optional, tag = "1")]
-    pub batch: ::std::option::Option<OutgoingTxBatch>,
+    pub batch: ::core::option::Option<OutgoingTxBatch>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -700,7 +711,7 @@ pub struct QueryOutgoingTxBatchesRequest {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryOutgoingTxBatchesResponse {
     #[prost(message, repeated, tag = "1")]
-    pub batches: ::std::vec::Vec<OutgoingTxBatch>,
+    pub batches: ::prost::alloc::vec::Vec<OutgoingTxBatch>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -708,13 +719,13 @@ pub struct QueryBatchRequestByNonceRequest {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub contract_address: std::string::String,
+    pub contract_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryBatchRequestByNonceResponse {
     #[prost(message, optional, tag = "1")]
-    pub batch: ::std::option::Option<OutgoingTxBatch>,
+    pub batch: ::core::option::Option<OutgoingTxBatch>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -722,15 +733,15 @@ pub struct QueryBatchConfirmRequest {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub contract_address: std::string::String,
+    pub contract_address: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryBatchConfirmResponse {
     #[prost(message, optional, tag = "1")]
-    pub confirm: ::std::option::Option<MsgConfirmBatch>,
+    pub confirm: ::core::option::Option<MsgConfirmBatch>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -738,19 +749,19 @@ pub struct QueryBatchConfirmsRequest {
     #[prost(uint64, tag = "1")]
     pub nonce: u64,
     #[prost(string, tag = "2")]
-    pub contract_address: std::string::String,
+    pub contract_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryBatchConfirmsResponse {
     #[prost(message, repeated, tag = "1")]
-    pub confirms: ::std::vec::Vec<MsgConfirmBatch>,
+    pub confirms: ::prost::alloc::vec::Vec<MsgConfirmBatch>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastEventNonceByAddrRequest {
     #[prost(string, tag = "1")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -762,13 +773,13 @@ pub struct QueryLastEventNonceByAddrResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryErc20ToDenomRequest {
     #[prost(string, tag = "1")]
-    pub erc20: std::string::String,
+    pub erc20: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryErc20ToDenomResponse {
     #[prost(string, tag = "1")]
-    pub denom: std::string::String,
+    pub denom: ::prost::alloc::string::String,
     #[prost(bool, tag = "2")]
     pub fx_originated: bool,
 }
@@ -776,13 +787,13 @@ pub struct QueryErc20ToDenomResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDenomToErc20Request {
     #[prost(string, tag = "1")]
-    pub denom: std::string::String,
+    pub denom: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDenomToErc20Response {
     #[prost(string, tag = "1")]
-    pub erc20: std::string::String,
+    pub erc20: ::prost::alloc::string::String,
     #[prost(bool, tag = "2")]
     pub fx_originated: bool,
 }
@@ -790,65 +801,65 @@ pub struct QueryDenomToErc20Response {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByValidatorRequest {
     #[prost(string, tag = "1")]
-    pub validator_address: std::string::String,
+    pub validator_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByValidatorResponse {
     #[prost(string, tag = "1")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub orchestrator_address: std::string::String,
+    pub orchestrator_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByEthRequest {
     #[prost(string, tag = "1")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByEthResponse {
     #[prost(string, tag = "1")]
-    pub validator_address: std::string::String,
+    pub validator_address: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub orchestrator_address: std::string::String,
+    pub orchestrator_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByOrchestratorRequest {
     #[prost(string, tag = "1")]
-    pub orchestrator_address: std::string::String,
+    pub orchestrator_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryDelegateKeyByOrchestratorResponse {
     #[prost(string, tag = "1")]
-    pub validator_address: std::string::String,
+    pub validator_address: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub eth_address: std::string::String,
+    pub eth_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPendingSendToEthRequest {
     #[prost(string, tag = "1")]
-    pub sender_address: std::string::String,
+    pub sender_address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPendingSendToEthResponse {
     #[prost(message, repeated, tag = "1")]
-    pub transfers_in_batches: ::std::vec::Vec<OutgoingTransferTx>,
+    pub transfers_in_batches: ::prost::alloc::vec::Vec<OutgoingTransferTx>,
     #[prost(message, repeated, tag = "2")]
-    pub unbatched_transfers: ::std::vec::Vec<OutgoingTransferTx>,
+    pub unbatched_transfers: ::prost::alloc::vec::Vec<OutgoingTransferTx>,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryIbcSequenceHeightRequest {
     #[prost(string, tag = "1")]
-    pub source_port: std::string::String,
+    pub source_port: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
-    pub source_channel: std::string::String,
+    pub source_channel: ::prost::alloc::string::String,
     #[prost(uint64, tag = "3")]
     pub sequence: u64,
 }
@@ -873,7 +884,7 @@ pub struct QueryLastObservedEthBlockHeightResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryLastEventBlockHeightByAddrRequest {
     #[prost(string, tag = "1")]
-    pub address: std::string::String,
+    pub address: ::prost::alloc::string::String,
 }
 
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -884,12 +895,15 @@ pub struct QueryLastEventBlockHeightByAddrResponse {
 
 #[doc = r" Generated client implementations."]
 pub mod query_client {
-    #![allow(unused_variables, dead_code, missing_docs)]
+    #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value, )]
 
     use tonic::codegen::*;
 
     #[doc = " Query defines the gRPC querier service"]
-    pub struct QueryClient<T> { inner: tonic::client::Grpc<T> }
+    #[derive(Debug, Clone)]
+    pub struct QueryClient<T> {
+        inner: tonic::client::Grpc<T>,
+    }
 
     impl QueryClient<tonic::transport::Channel> {
         #[doc = r" Attempt to create a new client by connecting to a given endpoint."]
@@ -899,14 +913,24 @@ pub mod query_client {
         }
     }
 
-    impl<T> QueryClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + HttpBody + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send, {
+    impl<T> QueryClient<T> where T: tonic::client::GrpcService<tonic::body::BoxBody>, T::ResponseBody: Body + Send + 'static, T::Error: Into<StdError>, <T::ResponseBody as Body>::Error: Into<StdError> + Send, {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
             Self { inner }
         }
-        pub fn with_interceptor(inner: T, interceptor: impl Into<tonic::Interceptor>) -> Self {
-            let inner = tonic::client::Grpc::with_interceptor(inner, interceptor);
-            Self { inner }
+        pub fn with_interceptor<F>(inner: T, interceptor: F) -> QueryClient<InterceptedService<T, F>> where F: tonic::service::Interceptor, T: tonic::codegen::Service<http::Request<tonic::body::BoxBody>, Response=http::Response<<T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody>>, <T as tonic::codegen::Service<http::Request<tonic::body::BoxBody>>>::Error: Into<StdError> + Send + Sync, { QueryClient::new(InterceptedService::new(inner, interceptor)) }
+        #[doc = r" Compress requests with `gzip`."]
+        #[doc = r""]
+        #[doc = r" This requires the server to support it otherwise it might respond with an"]
+        #[doc = r" error."]
+        pub fn send_gzip(mut self) -> Self {
+            self.inner = self.inner.send_gzip();
+            self
+        }
+        #[doc = r" Enable decompressing responses with `gzip`."]
+        pub fn accept_gzip(mut self) -> Self {
+            self.inner = self.inner.accept_gzip();
+            self
         }
         #[doc = " Deployments queries deployments"]
         pub async fn params(&mut self, request: impl tonic::IntoRequest<super::QueryParamsRequest>) -> Result<tonic::Response<super::QueryParamsResponse>, tonic::Status> {
@@ -1048,10 +1072,6 @@ pub mod query_client {
             self.inner.unary(request.into_request(), path, codec).await
         }
     }
-
-    impl<T: Clone> Clone for QueryClient<T> { fn clone(&self) -> Self { Self { inner: self.inner.clone() } } }
-
-    impl<T> std::fmt::Debug for QueryClient<T> { fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "QueryClient {{ ... }}") } }
 }
 
 /// SignType defines messages that have been signed by an orchestrator

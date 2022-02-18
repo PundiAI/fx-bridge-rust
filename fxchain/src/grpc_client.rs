@@ -114,9 +114,10 @@ pub async fn get_account_info(grpc_channel: &Channel, address: String) -> Result
     Ok(auth_account)
 }
 
+#[allow(deprecated)]
 pub async fn estimating_gas_usage(grpc_channel: &Channel, tx: Tx) -> Result<GasInfo> {
     let mut tx_client = TxClient::new(grpc_channel.clone());
-    let response = tx_client.simulate(SimulateRequest { tx: Some(tx) }).await?;
+    let response = tx_client.simulate(SimulateRequest { tx: Some(tx), tx_bytes: vec![] }).await?;
     let gas_info = response.into_inner().gas_info.unwrap();
     Ok(gas_info)
 }

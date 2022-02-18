@@ -14,11 +14,11 @@ macro_rules! info {
 
 fn main() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let project_dir = root.parent().unwrap().parent().unwrap().parent().unwrap();
+    let project_dir = root.parent().unwrap().parent().unwrap();
     println!("{:?}", project_dir);
     let proto_paths = [
-        PathBuf::from(format!("{}/proto/gravity/v1", project_dir.display())),
-        PathBuf::from(format!("{}/proto/other", project_dir.display())),
+        PathBuf::from(format!("{}/fx-core/proto/gravity/v1", project_dir.display())),
+        PathBuf::from(format!("{}/fx-core/proto/other", project_dir.display())),
     ];
 
     let gopath = std::env::var("GOPATH");
@@ -33,16 +33,16 @@ fn main() {
         }
     };
     let proto_include_paths = [
-        PathBuf::from(format!("{}/proto", project_dir.display())),
+        PathBuf::from(format!("{}/fx-core/proto", project_dir.display())),
         PathBuf::from(format!("{}/proto", sdk_dir.display())),
         PathBuf::from(format!("{}/third_party/proto", sdk_dir.display())),
     ];
 
-    let out_path = PathBuf::from(format!("{}/fxchain/src/prost/", root.parent().unwrap().display()));
+    let out_path = PathBuf::from(format!("{}/fx-eth-bridge/fxchain/src/prost/", project_dir.display()));
 
     compile_protos(&proto_paths, &proto_include_paths, &out_path);
 
-    let exclude_files = &[PathBuf::from("fx.gravity.v1.rs")];
+    let exclude_files = &[PathBuf::from("fx.gravity.v1.rs"), PathBuf::from("fx.other.rs")];
     remove_file_exclude(&out_path, exclude_files);
 }
 

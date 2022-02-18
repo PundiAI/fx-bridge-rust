@@ -48,7 +48,7 @@ where
             }
         } else {
             if Instant::now() - start_loop > TX_CONFIRMATIONS_TIMEOUT {
-                return Err(error::Error::Transport("tx confirm timeout".to_string()));
+                return Err(error::Error::InvalidResponse( format!("tx confirm timeout: {:?}", TX_CONFIRMATIONS_TIMEOUT)));
             }
         }
     }

@@ -1,7 +1,6 @@
 use crate::address::Address;
 use crate::proto_ext::MessageExt;
 use cosmos_sdk_proto::cosmos;
-use ecdsa::elliptic_curve::sec1::ToEncodedPoint;
 use eyre::Result;
 use prost_types;
 use prost_types::Any;
@@ -18,7 +17,7 @@ pub struct PublicKey(tendermint::PublicKey);
 
 impl PublicKey {
     pub fn to_address(&self) -> Address {
-        let sha256 = Sha256::digest(&self.0.as_bytes());
+        let sha256 = Sha256::digest(&self.0.to_bytes());
         let ripemd160 = Ripemd160::digest(&sha256);
         let mut bytes: [u8; 20] = Default::default();
         bytes.copy_from_slice(&ripemd160[..]);
@@ -26,7 +25,7 @@ impl PublicKey {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        self.0.as_bytes().to_vec()
+        self.0.to_bytes().to_vec()
     }
 
     pub fn to_any(&self) -> Result<Any> {
@@ -54,13 +53,7 @@ impl PublicKey {
 
 impl From<k256::ecdsa::VerifyingKey> for PublicKey {
     fn from(vk: k256::ecdsa::VerifyingKey) -> PublicKey {
-        PublicKey::from(&vk)
-    }
-}
-
-impl From<&k256::ecdsa::VerifyingKey> for PublicKey {
-    fn from(vk: &k256::ecdsa::VerifyingKey) -> PublicKey {
-        PublicKey(vk.to_encoded_point(true).into())
+        PublicKey(vk.into())
     }
 }
 

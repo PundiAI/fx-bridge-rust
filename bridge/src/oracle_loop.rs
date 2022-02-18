@@ -30,12 +30,12 @@ pub async fn eth_oracle_bridge_loop(fx_builder: &Builder, grpc_channel: &Channel
         // check validator status is bonded
         let result = get_orchestrator_validator_status(&grpc_channel, fx_builder.address()).await;
         if result.is_err() {
-            warn!("Get orchestrator validator status failed {:?}", result.unwrap_err().root_cause());
+            warn!("Get orchestrator status failed {:?}", result.unwrap_err().root_cause());
             continue;
         }
         let (status, eth_address_str) = result.unwrap();
         if status != BondStatus::Bonded as i32 {
-            warn!("Get orchestrator validator status is not 'Bonded', {:?}", status);
+            warn!("Get orchestrator status is not 'Bonded', {:?}", status);
             continue;
         }
         let eth_address = EthAddress::from_str(eth_address_str.as_str()).unwrap();

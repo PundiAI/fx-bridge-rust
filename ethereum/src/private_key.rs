@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::str::FromStr;
 
-use secp256k1::recovery::{RecoverableSignature, RecoveryId};
+use secp256k1::ecdsa::{RecoverableSignature, RecoveryId};
 use secp256k1::{Error, Message, PublicKey, Secp256k1, SecretKey};
 use sha3::{Digest, Keccak256};
 use web3::signing::{RecoveryError, SigningError};
@@ -92,7 +92,7 @@ impl Deref for PrivateKey {
 impl<T: Deref<Target = SecretKey>> Key for T {
     fn sign(&self, message: &[u8], chain_id: Option<u64>) -> Result<Signature, SigningError> {
         let message = Message::from_slice(&message).map_err(|_| SigningError::InvalidMessage)?;
-        let (recovery_id, signature) = Secp256k1::signing_only().sign_recoverable(&message, self).serialize_compact();
+        let (recovery_id, signature) = Secp256k1::signing_only().sign_ecdsa_recoverable(&message, self).serialize_compact();
 
         let standard_v = recovery_id.to_i32() as u64;
         let v = if let Some(chain_id) = chain_id {
@@ -226,7 +226,7 @@ pub fn recover(message: &[u8], signature: &[u8], recovery_id: i32) -> Result<Add
     let message = Message::from_slice(message).map_err(|_| RecoveryError::InvalidMessage)?;
     let recovery_id = RecoveryId::from_i32(recovery_id).map_err(|_| RecoveryError::InvalidSignature)?;
     let signature = RecoverableSignature::from_compact(&signature, recovery_id).map_err(|_| RecoveryError::InvalidSignature)?;
-    let public_key = Secp256k1::verification_only().recover(&message, &signature).map_err(|_| RecoveryError::InvalidSignature)?;
+    let public_key = Secp256k1::verification_only().recover_ecdsa(&message, &signature).map_err(|_| RecoveryError::InvalidSignature)?;
 
     Ok(public_key_address(&public_key))
 }
